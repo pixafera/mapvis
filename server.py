@@ -40,7 +40,6 @@ def upload_file():
     return jsonify(**read_spreadsheet(file_type, stream))
 
 
-
 if __name__ == '__main__':
     app.run(debug=True)
 
