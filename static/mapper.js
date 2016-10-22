@@ -192,11 +192,15 @@ document.body.addEventListener('drop', dragEnd);
 document.body.addEventListener('drop', function(e) {
   e.preventDefault();
 
+  loadFiles(e.dataTransfer.files);
+});
+
+function loadFiles(files) {
   var fractions = [];
   var done = 0;
 
-  for (var i=0; i<e.dataTransfer.files.length; i++) {
-    var file = e.dataTransfer.files[i];
+  for (var i=0; i<files.length; i++) {
+    var file = files[i];
 
     var reader = new FileReader();
     var xhr = new XMLHttpRequest();
@@ -242,9 +246,9 @@ document.body.addEventListener('drop', function(e) {
     for (i in fractions) {
       sum += fractions[i];
     }
-    setProgress(sum, (done === e.dataTransfer.files.length));
+    setProgress(sum, (done === files.length));
   }
-});
+}
 
 var progress = document.createElement('div');
 progress.className = 'progress';
@@ -268,7 +272,18 @@ document.body.addEventListener('keydown', function(e) {
   }
 });
 
-// TODO choose a file button
+
+// choose a file button
+
+var loadBtn = document.querySelector('#file-picker');
+var fileInput = h('input', { type: 'file', });
+loadBtn.appendChild(fileInput);
+
+function handleFileSelect(e) {
+  loadFiles(e.target.files);
+}
+fileInput.addEventListener('change', handleFileSelect, false);
+
 
 /*****************************************************************************/
 
@@ -398,11 +413,6 @@ function rect(w, h, props) {
 /* definitions */
 
 var cssContent = `
-path {
-    stroke: black;
-    stroke-width: 1px;
-    fill: white;
-}
 `;
 
 function makeStyle() {
