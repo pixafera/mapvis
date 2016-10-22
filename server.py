@@ -44,10 +44,24 @@ def upload_file():
     file_type = ext.lstrip(".")
 
     session = Session()
+
     return jsonify(
         name = name,
         **read_spreadsheet(file_type, stream, session)
     )
+
+@app.route("/region/<int:osm_id>")
+def region_json(osm_id):
+    region = (Session()
+        .query(model.Region)
+        .filter(model.Region.osm_id == osm_id)
+        .one_or_none())
+    print(osm_id, region)
+    if not region:
+        return 404
+    return jsonify(**json.loads(region.json))
+
+
 
 @app.route("/create")
 def create():
@@ -55,5 +69,6 @@ def create():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=5001, debug=True)
+
 

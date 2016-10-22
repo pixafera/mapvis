@@ -258,7 +258,7 @@ def read_spreadsheet(file_type, stream, session):
         region = regions[query]
         out.append(dict(
             row = row,
-            region = region,
+            region_osm_id = region['osm_id'] if region else None,
             query = query, # redundant but oh well
         ))
 
@@ -267,9 +267,9 @@ def read_spreadsheet(file_type, stream, session):
     # but Nominatim gives south,north,west,east
     bboxes = [region['boundingbox'] for region in regions.values() if region]
     bot = min(bot for bot, top, left, right in bboxes)
-    top = max(bot for bot, top, left, right in bboxes)
-    left = min(bot for bot, top, left, right in bboxes)
-    right = max(bot for bot, top, left, right in bboxes)
+    top = max(top for bot, top, left, right in bboxes)
+    left = min(left for bot, top, left, right in bboxes)
+    right = max(right for bot, top, left, right in bboxes)
     assert bot < top
     assert left < right
     print([bot, top, left, right])

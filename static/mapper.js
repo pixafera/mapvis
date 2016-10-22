@@ -1,5 +1,6 @@
 
 
+/*
 function h(sel, ...args) {
   const el = h.createElement(sel)
   h.add(el, args)
@@ -79,6 +80,21 @@ Object.assign(h, {
 
   removeChildren(el) {while (el.firstChild) el.removeChild(el.lastChild)},
 })
+*/
+
+function h(tagName, className, children) {
+  var result = document.createElement(tagName);
+  if (className) result.className = className;
+  children = typeof children === 'string' ? [children] : (children || []);
+  (children || []).forEach(function(c) {
+    if (c.appendChild === undefined) {
+      c = document.createTextNode(c);
+    }
+    result.appendChild(c);
+  });
+  return result;
+}
+
 
 /*****************************************************************************/
 
@@ -277,7 +293,8 @@ document.body.addEventListener('keydown', function(e) {
 // choose a file button
 
 var loadBtn = document.querySelector('#file-picker');
-var fileInput = h('input', { type: 'file', });
+var fileInput = h('input');
+fileInput.type = 'file';
 loadBtn.appendChild(fileInput);
 
 function handleFileSelect(e) {
@@ -510,56 +527,62 @@ function visualizeParty(text) {
 
   // create shapes.
   var w = left.clientWidth;
-  var svg = newSVG(w, w);
+  var svg = window.svg = newSVG(w, w);
   svg.appendChild(makeStyle());
   left.appendChild(svg);
 
   var title, subtitle;
-  right.appendChild(title = h('h2', h('em', "Tap the map...")));
-  right.appendChild(subtitle = h('p.subtitle', ""));
+  right.appendChild(title = h('h2', '', [h('em', '', ["Tap the map..."])]));
+  right.appendChild(subtitle = h('p.subtitle'));
 
-  var paths = [];
+  var world = group([]);
+
   records.forEach(function(record) {
-    var path;
-    paths.push(path = el('path', {
-      d: record.region.simple_path,
-    }));
-    var activate = function() {
-      console.log(record);
-      title.textContent = record.query;
-      subtitle.textContent = record.region.name;
-    };
-    path.addEventListener('mouseover', activate);
-    path.addEventListener('touchdown', activate);
+    if (record.region_osm_id == null) return;
+    get('/region/' + record.region_osm_id, function(region) {
 
-    paths.push(bbRect(record.region.boundingbox));
+      var path;
+      world.appendChild(path = el('path', {
+        d: region.simple_path,
+      }));
+      var activate = function() {
+        console.log(record);
+        title.textContent = record.query;
+        subtitle.textContent = region.name;
+      };
+      path.addEventListener('mouseover', activate);
+      path.addEventListener('touchdown', activate);
+
+      //world.appendChild(bbRect(region.boundingbox));
+    });
   });
-  var world = group(paths);
 
   // TODO pan, zoom
   world.style.transformOrigin = 'center';
 
-  var sw = w;
-  var sh = w;
-  var width = bbox[3] - bbox[2];
-  var height = bbox[1] - bbox[0];
-  if (width < 0) throw 'poo';
-  if (height < 0) throw 'poo';
-  var scale = Math.min(sw / width, sh / height);
-  //world.appendChild(bbRect(bbox));
+  function refresh() {
+    var sw = svg.clientWidth;
+    var sh = svg.clientHeight;
+    var width = bbox[3] - bbox[2];
+    var height = bbox[1] - bbox[0];
+    if (width < 0) throw 'poo';
+    if (height < 0) throw 'poo';
+    var scale = Math.min(sw / width, sh / height);
 
-  // Where is the bounding box center?
-  var x = (bbox[2] + bbox[3]) / 2;
-  var y = (bbox[0] + bbox[1]) / 2 + 100;
+    // Where is the bounding box center?
+    var x = (bbox[2] + bbox[3]) / 2;
+    var y = (bbox[0] + bbox[1]) / 2;
 
-  var p = 'translate('+x+'px, '+y+'px) scale(' + scale + ')';
-  world.style.transform = p;
+    var p = 'translate('+x+'px, '+y+'px) scale(' + scale + ')';
+    world.style.transform = p;
 
-  var foo = group([world]);
-  foo.style.transform = 'translate(' + (sw/2) + 'px, ' + (sh/2) + 'px)';
+    var foo = group([world]);
+    foo.style.transform = 'translate(' + (sw/2) + 'px, ' + (sh/2) + 'px)';
 
-  svg.appendChild(foo);
+    svg.appendChild(foo);
+  }
+  refresh();
 
-  debugger;
+  window.addEventListener('resize', refresh);
 }
 
