@@ -109,10 +109,8 @@ def gather_regions(query_list):
 
 
 
-
-
-def read_spreadsheet(contents):
-    sheet = pyexcel.get_sheet(file_content=contents, name_columns_by_row=0)
+def read_spreadsheet(file_name, contents):
+    sheet = pyexcel.get_sheet(file_type='xlsx', file_stream=contents, name_columns_by_row=0)
     headings = sheet.colnames
     records = sheet.to_records()
 
@@ -123,6 +121,8 @@ def read_spreadsheet(contents):
 
     not_found = [query for query, region in regions if region is None]
     # TODO complain about the ones we couldn't find
+
+    return [r for q, r in regions if r is not None]
 
     for record, region in zip(records, regions):
         # TODO party!
