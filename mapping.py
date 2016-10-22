@@ -1,6 +1,7 @@
 
 import random
 
+import pyexcel
 import requests
 
 
@@ -74,7 +75,6 @@ def simplify_segment(svg):
     except ValueError:
         selected = [" ".join(p) for p in pairs]
 
-
     return " ".join(first + selected + last)
 
 
@@ -95,17 +95,39 @@ def fetch_query(query):
 def gather_regions(query_list):
     """Take a list of queries and return a set of similar Regions"""
     results = []
-    for query in query_list:
-        #if "Query object exists in DB":
+    for query in query_list
+        if "Query object exists in DB":
             # get all related Regions via the M2M.
-        #    boundaries = ... # db lookup
-        #else:
-        boundaries = query_osm(query)  #fetch_query(query)
-        results.append((query, boundaries))
+            boundaries = ... # db lookup
+        else:
+            boundaries = fetch_query(query)
+        results.append(query, boundaries)
 
     return results
     # decide the most popular place_rank from the results
     # return a list of results with equal place_rank (as far as possible)
+
+
+
+
+
+def read_spreadsheet(contents):
+    sheet = pyexcel.get_sheet(file_content=contents, name_columns_by_row=0)
+    headings = sheet.colnames
+    records = sheet.to_records()
+
+    # Assume first column is Country
+    country_names = [record[headings[0]] for record in records]
+
+    regions = gather_regions(country_names)
+
+    not_found = [query for query, region in regions if region is None]
+    # TODO complain about the ones we couldn't find
+
+    for record, region in zip(records, regions):
+        # TODO party!
+        pass
+
 
 
 if __name__ == '__main__':
