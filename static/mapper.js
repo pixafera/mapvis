@@ -626,7 +626,14 @@ function showBreakdown(div, headings, values) {
         break;
       case 'float':
       case 'int':
-        li.appendChild(h('span', 'value value-' + kind, value));
+        var wrap, bar;
+        li.appendChild(wrap = h('span', 'value value-' + kind, ""));
+        //if (isNaN(heading.max)) break;
+        var perc = ((+value.replace(/,/g, '')) / heading.max) * 100;
+        wrap.appendChild(bar = h('div', 'percent-bar', [h('span','percent-value', value)]));
+        console.log(perc);
+        bar.style.width = perc + '%';
+
         // TODO graph these
         break;
       case 'enum': // TODO ???

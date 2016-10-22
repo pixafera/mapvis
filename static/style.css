@@ -73,11 +73,12 @@ em {
   margin: 0 auto;
   padding: 2em 2em;
   width: calc(50% - 4em);
-  float: left;
+  float: right;
 }
 .right.col {
   padding-left: 0
 }
+.left.col {position: fixed;}
 
 .centre {
   text-align: center;
