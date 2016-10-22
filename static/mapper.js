@@ -533,7 +533,7 @@ function visualizeParty(text) {
 
   var title, subtitle, breakdown;
   right.appendChild(title = h('h2', '', [h('em', '', ["Tap the map..."])]));
-  right.appendChild(subtitle = h('p.subtitle'));
+  right.appendChild(subtitle = h('p', 'subtitle'));
   right.appendChild(breakdown = h('div', 'breakdown'));
 
   var world = group([]);
