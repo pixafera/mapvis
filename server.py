@@ -1,4 +1,5 @@
-import csv
+import io
+
 from flask import Flask, request
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -25,9 +26,13 @@ def hello():
 
 @app.route("/upload", methods=['POST'])
 def upload_file():
-    data_file = request.files['data']
-    print(data_file.filename, data_file)
-    return str(party2.read_spreadsheet(data_file.filename, data_file))
+    upload = request.files['data']
+    stream = io.BytesIO(upload.read())
+
+    _, ext = os.path.splitext(upload.filename)
+    file_type = ext.lstrip(".")
+
+    return str(read_spreadsheet(file_type, stream))
 
 
 

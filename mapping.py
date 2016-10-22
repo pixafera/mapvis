@@ -1,5 +1,6 @@
 
 import random
+import os
 
 import pyexcel
 import requests
@@ -95,13 +96,13 @@ def fetch_query(query):
 def gather_regions(query_list):
     """Take a list of queries and return a set of similar Regions"""
     results = []
-    for query in query_list
-        if "Query object exists in DB":
-            # get all related Regions via the M2M.
-            boundaries = ... # db lookup
-        else:
-            boundaries = fetch_query(query)
-        results.append(query, boundaries)
+    for query in query_list:
+        #if "Query object exists in DB":
+        #    # get all related Regions via the M2M.
+        #    boundaries = ... # db lookup
+        #else:
+        boundaries = query_osm(query)
+        results.append((query, boundaries))
 
     return results
     # decide the most popular place_rank from the results
@@ -109,8 +110,8 @@ def gather_regions(query_list):
 
 
 
-def read_spreadsheet(file_name, contents):
-    sheet = pyexcel.get_sheet(file_type='xlsx', file_stream=contents, name_columns_by_row=0)
+def read_spreadsheet(file_type, stream):
+    sheet = pyexcel.get_sheet(file_type=file_type, file_stream=stream, name_columns_by_row=0)
     headings = sheet.colnames
     records = sheet.to_records()
 
