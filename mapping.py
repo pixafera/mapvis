@@ -153,6 +153,7 @@ def get_sheet(file_type, stream):
     )
 
 def guess_kind(value):
+    # TODO testcases for this!
     if isinstance(value, int):
         return 'int'
     elif isinstance(value, float):
@@ -175,12 +176,15 @@ def guess_kind(value):
 
 def inspect_column(heading, values):
     assert len(values) > 0
-    kind, _ = Counter(guess_kind(v) for v in values).most_common(1)[0]
+    counter = Counter(guess_kind(v) for v in values)
+    kind, _ = counter.most_common(1)[0]
 
     data = dict(
         heading = heading,
     )
 
+    if kind == 'int' and 'float' in counter:
+        kind = 'float'
     if kind == 'text':
         counter = Counter(values)
         if len(counter) / len(values) < 0.5:
@@ -230,8 +234,8 @@ def read_spreadsheet(file_type, stream, session):
         query, region = region
         out.append(dict(
             row = row,
-            query = query,
             region = region,
+            query = query, # redundant but oh well
         ))
 
     return dict(
