@@ -16,6 +16,11 @@ class Region(Base):
 	place_rank = Column(Integer)
 	json = Column(String)
 
+	def to_dict(self):
+		return dict(osm_id=self.osm_id,
+			        place_rank=self.place_rank,
+			        json=self.json)
+
 
 class Query(Base):
 	__tablename__ = 'query'
@@ -24,3 +29,8 @@ class Query(Base):
 	search_string = Column(String)
 
 	regions = relationship('Region', secondary=query_region_table)
+
+	def to_dict(self):
+		return dict(id=self.id,
+			        search_string=self.search_string,
+			        regions=[r.to_dict() for r in self.regions])
