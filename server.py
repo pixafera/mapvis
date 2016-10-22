@@ -25,9 +25,10 @@ def hello():
 
 @app.route("/upload", methods=['POST'])
 def upload_file():
+    s = Session()
     data_file = request.files['data']
     print(data_file.filename, data_file)
-    return str(party2.read_spreadsheet(data_file.filename, data_file))
+    return str(read_spreadsheet(data_file.filename, data_file, s))
 
 
 
