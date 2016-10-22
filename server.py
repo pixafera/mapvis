@@ -1,7 +1,7 @@
 
 import json
 
-from flask import Flask, request
+from flask import Flask, request, redirect, url_for, jsonify
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlite3 import dbapi2 as sqlite
@@ -25,6 +25,10 @@ Session = sessionmaker(bind=engine)
 def hello():
     return "<html><body><form method='POST' action='upload' enctype='multipart/form-data'><input type='file' name='data'/><input type='submit' value='submit'/></form></body></html>"
 
+@app.route("/upload", methods=['GET'])
+def cant_get_upload():
+    return redirect(url_for('hello'))
+
 @app.route("/upload", methods=['POST'])
 def upload_file():
     upload = request.files['data']
@@ -33,7 +37,7 @@ def upload_file():
     _, ext = os.path.splitext(upload.filename)
     file_type = ext.lstrip(".")
 
-    return str(read_spreadsheet(file_type, stream))
+    return jsonify(**read_spreadsheet(file_type, stream))
 
 
 

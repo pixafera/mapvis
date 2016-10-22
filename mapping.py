@@ -147,11 +147,18 @@ def read_spreadsheet(file_type, stream):
     not_found = [query for query, region in regions if region is None]
     # TODO complain about the ones we couldn't find
 
-    return [r for q, r in regions if r is not None]
-
+    output = []
     for record, region in zip(records, regions):
         # TODO party!
-        pass
+        output.append(dict(
+            row = record,
+            region = region,
+        ))
+    return dict(
+        headings = headings,
+        rows = output,
+    )
+
 
 
 
