@@ -70,7 +70,11 @@ def region_json(osm_id):
     return jsonify(**json.loads(region.json))
 
 
-@app.route("/dataset/<id>")
+@app.route("/doc/<id>")
+def doc_please(id, session=None):
+    return render_template('create.html')
+
+@app.route("/doc/<id>.json")
 def dataset_json(id, session=None):
     if session is None:
         session = Session()
@@ -78,7 +82,7 @@ def dataset_json(id, session=None):
     dataset = session.query(model.Dataset.json).filter(model.Dataset.id == id).scalar()
     if not dataset:
         return 404
-    return jsonify(**json.loads(dataset))
+    return jsonify(**json.loads(dataset.decode('utf-8')))
 
 
 @app.route("/create")

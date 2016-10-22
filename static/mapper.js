@@ -1,87 +1,4 @@
 
-
-/*
-function h(sel, ...args) {
-  const el = h.createElement(sel)
-  h.add(el, args)
-  return el
-}
-Object.assign(h, {
-  _views: [],
-  _view: null,
-
-  pushView(v) {
-    if (h._view) h._views.push(h._view)
-    h._view = v
-  },
-  popView(v) {h._view = h._views.pop()},
-
-  nearest(sel, el, stop) {
-    while (el && el.nodeType === 1 && el !== stop) {
-      if (el.matches(sel)) return el
-      el = el.parentNode
-    }
-  },
-  nextSkippingChildren(x) {
-    for (; x; x = x.parentNode) if (x.nextSibling) return x.nextSibling
-  },
-
-  createElement(sel) {
-    const parts = (sel || '').split(/([#.])/)
-    const el = document.createElement(parts[0] || 'div')
-    const l = parts.length
-    if (l > 1) {
-      const classes = []
-      for (let i = 1; i < l; i += 2) {
-        if (parts[i] === '#') el.id = parts[i + 1]
-        else classes.push(parts[i + 1])
-      }
-      el.className = classes.join(' ')
-    }
-    return el
-  },
-  add(el, a) {
-    if (Array.isArray(a)) {
-      for (const c of a) h.add(el, c)
-    } else if (typeof a === 'object' && a) {
-      if (a.isView) h._view.add(a, el)
-      else if (a.tagName) el.appendChild(a)
-      // else if (a.then) h.addPromise(el, a)
-      else h.attrs(el, a)
-    } else {
-      el.appendChild(document.createTextNode(String(a)))
-    }
-  },
-  // addPromise(el, a) {
-  //   function replace(a) {
-  //     if (Array.isArray(a)) {
-  //       for (const c of a) h.add(f, c)
-  //     } else if (typeof a === 'object' && a) {
-  //       if (a.isView) h._view.add(a, el)
-  //       else if (a.tagName) el.appendChild(a)
-  //       else if (a.then) h.addPromise(el, a)
-  //       else h.attrs(el, a)
-  //     } else {
-  //       el.appendChild(document.createTextNode(String(a)))
-  //     }
-  //   }
-  //   const tn = document.createTextNode('')
-  //   el.appendChild(tn)
-  //   a.then(replace)
-  // },
-  attrs(el, a) {
-    for (const k in a) {
-      const v = a[k]
-      if (typeof v === 'object') h.attrs(el[k], v)
-      else if (k.startsWith('on')) el.addEventListener(k.slice(2), typeof v === 'string' ? h._view[v].bind(h._view) : v)
-      else el[k] = v
-    }
-  },
-
-  removeChildren(el) {while (el.firstChild) el.removeChild(el.lastChild)},
-})
-*/
-
 function h(tagName, className, children) {
   var result = document.createElement(tagName);
   if (className) result.className = className;
@@ -94,9 +11,6 @@ function h(tagName, className, children) {
   });
   return result;
 }
-
-
-/*****************************************************************************/
 
 function extend(src, dest) {
   src = src || {};
@@ -240,8 +154,12 @@ function loadFiles(files) {
         if (text) {
           update();
 
-          // HERE happens the things
-          visualizeParty(text);
+          var json = JSON.parse(text);
+
+          var title = json.name + " · mapvis";
+          history.pushState({}, title, '/doc/' + json.dataset_id)
+
+          visualizeParty(json);
         }
       }
       done++;
@@ -512,8 +430,19 @@ Filter.prototype.merge = function(children) {
 var left = document.querySelector('.left.col');
 var right = document.querySelector('.right.col');
 
-function visualizeParty(text) {
-  var json = JSON.parse(text);
+window.addEventListener('popstate', function() {
+  location.reload();
+});
+if (/^\/doc\//.test(location.pathname)) {
+  var dataset_id = location.pathname.slice(5);
+  get('/doc/' + dataset_id + '.json', visualizeParty);
+}
+
+function visualizeParty(json) {
+  console.log(json);
+  var title = json.name + " · mapvis";
+  document.title = title;
+
   var headings = json.headings;
   var records = json.records;
   var bbox = json.bbox;
@@ -665,4 +594,9 @@ function showBreakdown(div, headings, values) {
   });
 
 }
+
+function recolor() {
+
+}
+
 
