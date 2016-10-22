@@ -78,7 +78,6 @@ def simplify_path(svg):
     segments = svg.split("M ")
     assert segments.pop(0) == ""
 
-    # TODO only keep the largest segments
     segments.sort(key=len, reverse=True)
     segments = segments[:3]
 
@@ -98,7 +97,7 @@ def simplify_segment(svg):
     pairs = [(words[i], words[i+1]) for i in range(4, len(words) - 1, 2)]
 
     # Keep N points
-    limit = 150 # TODO tweak this
+    limit = 150 # TODO tweak this?
     try:
         indexes = random.sample(list(range(len(pairs))), limit)
         indexes.sort()
@@ -146,9 +145,6 @@ def gather_regions(query_list, session):
         for q in fetch_queries(queries_to_osm, session):
             db_query_lookup[q.search_string] = q
 
-    # TODO decide the most popular place_rank from the results
-    # TODO return a list of results with equal place_rank (as far as possible)
-
     # What place_rank are we looking for?
     place_rank_counter = Counter(itertools.chain(*(set(r.region.place_rank for r in q.regions) for q in db_query_lookup.values())))
     print(place_rank_counter)
@@ -176,8 +172,8 @@ def get_sheet(file_type, stream):
         file_type=file_type,
         file_stream=stream,
         name_columns_by_row=0, # First row is headings
-        auto_detect_int=False, # TODO do these do anything?
-        auto_detect_float=False, # TODO do these do anything?
+        auto_detect_int=False,   #- Excel ignores these :-(
+        auto_detect_float=False, #
     )
 
 def guess_kind(value):
@@ -245,7 +241,7 @@ def read_spreadsheet(file_type, stream, session):
     headings = [inspect_column(h, c) for h, c in zip(headings, columns)]
 
     # Assume first column is Country
-    # TODO pick first TEXT column
+    # TODO pick first column of kind 'text'
     index = 0
     headings[index]['is_region'] = True
     country_names = columns[index]
@@ -255,7 +251,7 @@ def read_spreadsheet(file_type, stream, session):
     regions = gather_regions(country_names, session)
 
     #not_found = [query for query, region in regions if region is None]
-    # TODO complain about the ones we couldn't find
+    # TODO complain about regions with zero search results
 
     out = []
     for record in records:

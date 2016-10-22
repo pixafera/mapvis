@@ -232,8 +232,30 @@ h3 {
 
 /*****************************************************************************/
 
+#file-picker input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 1000px;
+    height: 1000px;
+    font-size: 100px;
+    opacity: 0;
+    z-index: 0;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+}
+
+/*****************************************************************************/
+
 svg {
   border: 1px solid #ccc;
   width: 100%;
+}
+
+path {
+    stroke: black;
+    stroke-width: 1px;
+    fill: white;
 }
 
