@@ -1,9 +1,15 @@
 
 import random
 import os
+import io
 
+import chardet
 import pyexcel
 import requests
+
+
+#------------------------------------------------------------------------------
+# query & cache OSM
 
 
 def query_osm(query):
@@ -109,9 +115,27 @@ def gather_regions(query_list):
     # return a list of results with equal place_rank (as far as possible)
 
 
+#------------------------------------------------------------------------------
+# read spreadsheet
+
+
+def guess_encoding(raw):
+    print(raw[:200])
+    if b'\xc2\xa3' in raw: # u'£'
+        return 'utf-8'
+    det = chardet.detect(raw)
+    print(det)
+    return det['encoding']
+
+def get_sheet(file_type, stream):
+    if file_type == 'csv':
+        raw = stream.read()
+        det = chardet.detect(raw)
+        stream = io.StringIO(raw.decode(det['encoding']))
+    return pyexcel.get_sheet(file_type=file_type, file_stream=stream, name_columns_by_row=0)
 
 def read_spreadsheet(file_type, stream):
-    sheet = pyexcel.get_sheet(file_type=file_type, file_stream=stream, name_columns_by_row=0)
+    sheet = get_sheet(file_type, stream)
     headings = sheet.colnames
     records = sheet.to_records()
 
