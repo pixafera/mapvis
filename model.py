@@ -1,13 +1,8 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Table
+from sqlalchemy import Column, Float, ForeignKey, Integer, String, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
-
-query_region_table = Table('query_region', Base.metadata,
-	                       Column('query_id', Integer, ForeignKey('query.id')),
-	                       Column('region_osm_id', Integer, ForeignKey('region.osm_id')))
-
 
 class Region(Base):
 	__tablename__ = 'region'
@@ -15,6 +10,8 @@ class Region(Base):
 	osm_id = Column(Integer, primary_key=True)
 	place_rank = Column(Integer)
 	json = Column(String)
+
+	queries = relationship('QueryRegion', backref='region')
 
 	def to_dict(self):
 		return dict(osm_id=self.osm_id,
@@ -28,9 +25,19 @@ class Query(Base):
 	id = Column(Integer, primary_key=True)
 	search_string = Column(String)
 
-	regions = relationship('Region', secondary=query_region_table)
+	regions = relationship('QueryRegion', backref='query')
 
 	def to_dict(self):
 		return dict(id=self.id,
 			        search_string=self.search_string,
 			        regions=[r.to_dict() for r in self.regions])
+
+class QueryRegion(Base):
+	__tablename__ = 'query_region'
+
+	query_id = Column(Integer, ForeignKey('query.id'), primary_key=True)
+	region_osm_id = Column(Integer, ForeignKey('region.osm_id'), primary_key=True)
+	importance = Column(Float)
+
+	def to_dict(self):
+		return dict(importance=self.importance, **self.region.to_dict())

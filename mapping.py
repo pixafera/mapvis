@@ -1,6 +1,7 @@
 
 from collections import Counter
 import io
+import itertools
 import json
 import os
 import random
@@ -62,6 +63,7 @@ def query_osm(queries):
                 # Might want to keep the centre
                 lat = boundary['lat'],
                 lon = boundary['lon'],
+                importance = float(boundary['importance'])
             )
             reduced_boundaries.append(d)
         yield r.meta, reduced_boundaries
@@ -118,7 +120,9 @@ def fetch_queries(queries, session):
         session.commit()
 
         q = model.Query(search_string=query)
-        q.regions.extend(regions.values())
+        for b in boundary:
+            q.regions.append(model.QueryRegion(query=q, region=regions[b['osm_id']], importance=b['importance']))
+        session.add(q)
         session.commit()
 
         yield q
@@ -131,6 +135,7 @@ def gather_regions(query_list, session):
     db_query_lookup = {q.search_string: q for q in db_queries}
 
     queries_to_osm = [q for q in query_list if q not in db_query_lookup]
+    print('{} queries to OSM'.format(len(queries_to_osm)))
     if len(queries_to_osm) > 0:
         for q in fetch_queries(queries_to_osm, session):
             db_query_lookup[q.search_string] = q
@@ -138,8 +143,17 @@ def gather_regions(query_list, session):
     # TODO decide the most popular place_rank from the results
     # TODO return a list of results with equal place_rank (as far as possible)
 
+    # What place_rank are we looking for?
+    place_rank_counter = Counter(itertools.chain(*(set(r.region.place_rank for r in q.regions) for q in db_query_lookup.values())))
+    print(place_rank_counter)
+    modal_place_rank = place_rank_counter.most_common(1)[0][0]
+
+    def get_best_region_json(q):
+        best_region = next(iter(sorted((r for r in q.regions if r.region.place_rank == modal_place_rank), key=lambda r:r.importance)), None)
+        return json.loads(best_region.region.json) if best_region is not None else None
+
     # for now, return only the first Region
-    results = {q: (None if len(b.regions) == 0 else json.loads(b.regions[0].json)) for q, b in db_query_lookup.items()}
+    results = {q: get_best_region_json(b) for q, b in db_query_lookup.items()}
 
     return results
 
@@ -235,10 +249,10 @@ def read_spreadsheet(file_type, stream, session):
 
     out = []
     for record in records:
-        query = record[headings[0]]
-        region = regions[record[headings[0]]]
+        query = record[headings[0]['heading']]
+        region = regions[query]
         out.append(dict(
-            row = row,
+            row = record,
             query = query,
             region = region,
         ))
