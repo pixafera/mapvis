@@ -1,0 +1,239 @@
+body, div, p, textarea, pre, ul, ol, li, blockquote, hr,
+table, tbody, thead, tr, td, th,
+h1, h2, h3, h4, h5, a, button, input {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  list-style: none;
+  text-decoration: none;
+}
+
+* {
+  line-height: 1.25;
+}
+
+a {
+  white-space: normal;
+  cursor: pointer;
+}
+
+body {
+  font-family: -apple-system, Helvetica Neue, Arial, Helvetica, sans-serif;
+  font-size: 1rem;
+  background: #fff;
+  color: #000;
+  font-size: 16px;
+}
+
+strong {
+  font-weight: 700;
+}
+
+.right {
+  float: right;
+}
+
+/*****************************************************************************/
+
+.header {
+  text-align: center;
+  margin: 8em 0 2em;
+}
+.big-title {
+  font-size: 2em;
+  font-weight: 700;
+}
+
+.title {
+  font-weight: 700;
+  text-align: left;
+  margin: 1em 2em 0;
+  padding: 1em 0;
+  border-bottom: 1px solid #555;
+}
+
+.col {
+  /* max-width: 42em; */
+  margin: 0 auto;
+  padding: 2em 2em;
+  width: calc(50% - 4em);
+  float: left;
+}
+
+.centre {
+  text-align: center;
+  margin: 1.5em 0;
+}
+.big {
+  font-weight: 700;
+  font-size: 1.25em;
+  margin: 1.25em 0;
+}
+
+h2 {
+  font-size: 1.5em;
+  font-weight: 700;
+  margin: 0 0 0.5em;
+  line-height: 1em;
+}
+
+h2 .link {
+  font-size: 1rem;
+  line-height: 1.5em;
+}
+
+
+.link {
+  font-weight: normal;
+}
+.link, .slink:hover {
+  position: relative;
+  border-bottom: 2px solid;
+  transition: color 150ms ease-out;
+}
+.link:hover,
+.link-title:hover {
+  color: #3F67E9;
+  transition: none;
+}
+.link:active,
+.slink:active,
+.link-title:active {
+  top: 1px;
+}
+
+.link-title {
+  position: relative;
+  border-bottom: 2px solid;
+  transition: color 150ms ease-out;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.button, .clickable, .link, .slink:hover {
+  cursor: pointer;
+}
+
+
+.button {
+  display: inline-block;
+  position: relative;
+  font-size: 1.25em;
+  padding: 0.5em 0.75em;
+  border-radius: 6px;
+  font-weight: 400;
+  text-align: center;
+  margin: 16px 0;
+}
+.button:active {
+  top: 2px;
+}
+.button strong {
+  font-size: 1.25em;
+  font-weight: 700;
+  display: block;
+}
+.button:disabled {
+  color: rgba(255,255,255, 0.25);
+  box-shadow: none;
+}
+
+.button-fill  { background: #9AC0EF; box-shadow: 0 4px #7298C5; }
+.button-fill:active {                box-shadow: 0 2px #7298C5; }
+
+.button-white { border: 2px solid #D2D5E2; box-shadow: 0 4px #D2D5E2;}
+.button-white:active {                     box-shadow: 0 2px #D2D5E2; }
+
+.button-icon {
+
+min-width: 8em;line-height: 1.5em;}
+
+.button .icon {
+  float: left;
+  margin: -6px 8px -6px -13px;
+}
+.button .icon-small {
+  margin: -26px -9pxj-30px -26px;
+  display: inline-block;
+  float: none;
+  transform: scale(0.8);
+}
+
+.icon {
+  display: inline-block;
+  width: 80px;
+  height: 80px;
+  background: url(icons.png);
+}
+.icon-raven { background-position:   0px 0 }
+.icon-email { background-position: -80px 0 }
+
+
+
+label {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+input {
+  border: 1px solid #ccc;
+  display: block;
+  width: 100%;
+  padding: 0.25em 0.5em;
+  margin: 0.25em 0;
+}
+
+/*****************************************************************************/
+
+h3 {
+  font-size: 1.125em;
+  font-weight: 700;
+  margin: 0 0 0.325em;
+}
+
+/*****************************************************************************/
+
+.drag-target {
+  opacity: 0.5;
+}
+.drag-target:after {
+  background: rgba(0,0,0,0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  content: "";
+  pointer-events: none;
+}
+
+.progress {
+  position: fixed;
+  bottom: 0;
+  height: 12px;
+  left: 0;
+  background: #7ae;
+  min-width: 24px;
+  transition: all 200ms;
+}
+
+.hidden-select {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  cursor: pointer;
+}
+
+/*****************************************************************************/
+
+svg {
+  border: 1px solid #ccc;
+  width: 100%;
+}
+

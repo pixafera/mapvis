@@ -1,0 +1,21 @@
+{% extends '_base.html' %}
+{% block left %}
+
+  <p>Recent maps:
+
+  <ul>
+    <li>map
+    <li>map
+    <li>map
+  </ul>
+
+{% endblock %}
+{% block right %}
+
+  <h2>Hello world!</h2>
+
+  <p>We like maps.
+
+  <p><a href="{{ url_for('create') }}" class="button button-fill">Make a map</a>
+
+{% endblock %}

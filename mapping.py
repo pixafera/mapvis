@@ -38,6 +38,7 @@ def query_osm(queries):
         # Only keep a few fields
         reduced_boundaries = []
         for boundary in boundaries:
+            print(boundary)
             d = dict(
                 # Key cached objects based on OSM id
                 # -- make sure we don't cache 'em more than once
@@ -54,6 +55,7 @@ def query_osm(queries):
                 # Might want to keep the centre
                 lat = boundary['lat'],
                 lon = boundary['lon'],
+                boundingbox = boundary['boundingbox'],
             )
             reduced_boundaries.append(d)
         yield reduced_boundaries

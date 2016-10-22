@@ -1,0 +1,31 @@
+<!doctype html>
+<meta charset=utf8>
+<meta name=viewport content="width=device-width, initial-scale=1">
+
+<title>{% block title %}mapvis{% endblock %}</title>
+
+<link rel=stylesheet href=/static/style.css>
+
+<!---------------------------------------------------------------------------->
+
+<h1 class=title>
+  <a href="{{ url_for('root') }}">mapvis</a>
+</h1>
+
+<div class="left col">
+{% block left %}{% endblock %}
+</div>
+
+<div class="right col">
+{% block right %}{% endblock %}
+</div>
+
+<!---------------------------------------------------------------------------->
+
+<script>
+function $(selector) {
+  return [].slice.apply(document.querySelectorAll(selector));
+}
+</script>
+{% block end %}{% endblock %}
+
