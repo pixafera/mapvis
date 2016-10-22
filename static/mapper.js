@@ -618,7 +618,9 @@ function showBreakdown(div, headings, values) {
     var li = h('div', 'stat');
     div.appendChild(li);
 
-    li.appendChild(h('span', 'heading', heading.heading));
+    var label;
+    li.appendChild(label = h('span', 'heading', heading.heading));
+    label.title = heading.heading;
 
     switch (kind) {
       case 'text':
