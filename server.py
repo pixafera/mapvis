@@ -34,10 +34,15 @@ def upload_file():
     upload = request.files['data']
     stream = io.BytesIO(upload.read())
 
-    _, ext = os.path.splitext(upload.filename)
+    file_name = upload.filename
+    _, ext = os.path.splitext(file_name)
     file_type = ext.lstrip(".")
 
-    return jsonify(**read_spreadsheet(file_type, stream, Session()))
+    session = Session()
+    return jsonify(
+        file_name = file_name,
+        **read_spreadsheet(file_type, stream, session)
+    )
 
 
 if __name__ == '__main__':
