@@ -1,4 +1,5 @@
 
+from collections import Counter
 import io
 import json
 import os
@@ -88,9 +89,6 @@ def simplify_segment(svg):
 
     pairs = [(words[i], words[i+1]) for i in range(4, len(words) - 1, 2)]
 
-    #from collections import Counter
-    #pprint(Counter(svg))
-
     # Keep N points
     limit = 150 # TODO tweak this
     try:
@@ -154,33 +152,100 @@ def get_sheet(file_type, stream):
         raw = stream.read()
         det = chardet.detect(raw)
         stream = io.StringIO(raw.decode(det['encoding']))
-    return pyexcel.get_sheet(file_type=file_type, file_stream=stream, name_columns_by_row=0)
+    return pyexcel.get_sheet(
+        file_type=file_type,
+        file_stream=stream,
+        name_columns_by_row=0, # First row is headings
+        auto_detect_int=False, # TODO do these do anything?
+        auto_detect_float=False, # TODO do these do anything?
+    )
+
+def guess_kind(value):
+    if isinstance(value, int):
+        return 'int'
+    elif isinstance(value, float):
+        return 'float'
+    elif isinstance(value, str):
+        if value.strip() == '':
+            return 'empty'
+
+        value = value.strip()
+        num = value.replace("%", "").replace(",", "")
+        is_num = num.replace(".", "").isdigit()
+
+        if "%" in value and is_num:
+            return 'percent'
+        elif is_num:
+            return 'float' if "." in value else 'int'
+        return 'text'
+    print(type(value))
+    return 'other'
+
+def inspect_column(heading, values):
+    assert len(values) > 0
+    kind, _ = Counter(guess_kind(v) for v in values).most_common(1)[0]
+
+    data = dict(
+        heading = heading,
+    )
+
+    if kind == 'text':
+        counter = Counter(values)
+        if len(counter) / len(values) < 0.5:
+            kind = 'enum'
+            data['options'] = sorted(counter.keys())
+    data['kind'] = kind
+
+    if kind == 'int':
+        for i in range(len(values)):
+            values[i] = int(str(values[i]).replace(",", ""))
+    elif kind in ('float', 'percent'):
+        for i in range(len(values)):
+            try:
+                values[i] = float(str(values[i]).replace("%", ""))
+            except ValueError:
+                values[i] = float('NaN')
+    if kind in ('int', 'float'):
+        data['min'] = min(values)
+        data['max'] = max(values)
+    return data
+
 
 def read_spreadsheet(file_type, stream, session):
     sheet = get_sheet(file_type, stream)
     headings = sheet.colnames
     records = sheet.to_records()
 
+    # TODO tag headings with what their data looks like
+    columns = list(sheet.columns())
+    headings = [inspect_column(h, c) for h, c in zip(headings, columns)]
+
     # Assume first column is Country
-    country_names = [record[headings[0]] for record in records]
+    # TODO pick first TEXT column
+    index = 0
+    headings[index]['is_region'] = True
+    country_names = columns[index]
+    del columns
+    print(country_names)
 
     regions = gather_regions(country_names, session)
 
     #not_found = [query for query, region in regions if region is None]
     # TODO complain about the ones we couldn't find
 
-    output = []
+    out = []
     for record in records:
         query = record[headings[0]]
         region = regions[record[headings[0]]]
-        output.append(dict(
-            row = record, # TODO actually don't use to_records()
+        out.append(dict(
+            row = row,
             query = query,
             region = region,
         ))
+
     return dict(
         headings = headings,
-        rows = output,
+        records = out,
     )
 
 
