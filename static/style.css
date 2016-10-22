@@ -25,6 +25,7 @@ body {
   background: #fff;
   color: #000;
   font-size: 16px;
+  min-height: calc(100vh - 2em);
 }
 
 strong {
