@@ -1,87 +1,4 @@
 
-
-/*
-function h(sel, ...args) {
-  const el = h.createElement(sel)
-  h.add(el, args)
-  return el
-}
-Object.assign(h, {
-  _views: [],
-  _view: null,
-
-  pushView(v) {
-    if (h._view) h._views.push(h._view)
-    h._view = v
-  },
-  popView(v) {h._view = h._views.pop()},
-
-  nearest(sel, el, stop) {
-    while (el && el.nodeType === 1 && el !== stop) {
-      if (el.matches(sel)) return el
-      el = el.parentNode
-    }
-  },
-  nextSkippingChildren(x) {
-    for (; x; x = x.parentNode) if (x.nextSibling) return x.nextSibling
-  },
-
-  createElement(sel) {
-    const parts = (sel || '').split(/([#.])/)
-    const el = document.createElement(parts[0] || 'div')
-    const l = parts.length
-    if (l > 1) {
-      const classes = []
-      for (let i = 1; i < l; i += 2) {
-        if (parts[i] === '#') el.id = parts[i + 1]
-        else classes.push(parts[i + 1])
-      }
-      el.className = classes.join(' ')
-    }
-    return el
-  },
-  add(el, a) {
-    if (Array.isArray(a)) {
-      for (const c of a) h.add(el, c)
-    } else if (typeof a === 'object' && a) {
-      if (a.isView) h._view.add(a, el)
-      else if (a.tagName) el.appendChild(a)
-      // else if (a.then) h.addPromise(el, a)
-      else h.attrs(el, a)
-    } else {
-      el.appendChild(document.createTextNode(String(a)))
-    }
-  },
-  // addPromise(el, a) {
-  //   function replace(a) {
-  //     if (Array.isArray(a)) {
-  //       for (const c of a) h.add(f, c)
-  //     } else if (typeof a === 'object' && a) {
-  //       if (a.isView) h._view.add(a, el)
-  //       else if (a.tagName) el.appendChild(a)
-  //       else if (a.then) h.addPromise(el, a)
-  //       else h.attrs(el, a)
-  //     } else {
-  //       el.appendChild(document.createTextNode(String(a)))
-  //     }
-  //   }
-  //   const tn = document.createTextNode('')
-  //   el.appendChild(tn)
-  //   a.then(replace)
-  // },
-  attrs(el, a) {
-    for (const k in a) {
-      const v = a[k]
-      if (typeof v === 'object') h.attrs(el[k], v)
-      else if (k.startsWith('on')) el.addEventListener(k.slice(2), typeof v === 'string' ? h._view[v].bind(h._view) : v)
-      else el[k] = v
-    }
-  },
-
-  removeChildren(el) {while (el.firstChild) el.removeChild(el.lastChild)},
-})
-*/
-
 function h(tagName, className, children) {
   var result = document.createElement(tagName);
   if (className) result.className = className;
@@ -94,9 +11,6 @@ function h(tagName, className, children) {
   });
   return result;
 }
-
-
-/*****************************************************************************/
 
 function extend(src, dest) {
   src = src || {};
@@ -240,8 +154,12 @@ function loadFiles(files) {
         if (text) {
           update();
 
-          // HERE happens the things
-          visualizeParty(text);
+          var json = JSON.parse(text);
+
+          var title = json.name + " · mapvis";
+          history.pushState({}, title, '/doc/' + json.dataset_id)
+
+          visualizeParty(json);
         }
       }
       done++;
@@ -512,16 +430,23 @@ Filter.prototype.merge = function(children) {
 var left = document.querySelector('.left.col');
 var right = document.querySelector('.right.col');
 
-function visualizeParty(text) {
-  var json = JSON.parse(text);
+window.addEventListener('popstate', function() {
+  location.reload();
+});
+if (/^\/doc\//.test(location.pathname)) {
+  var dataset_id = location.pathname.slice(5);
+  get('/doc/' + dataset_id + '.json', visualizeParty);
+}
+
+function visualizeParty(json) {
+  console.log(json);
+  var title = json.name + " · mapvis";
+  document.title = title;
+
   var headings = json.headings;
   var records = json.records;
   var bbox = json.bbox;
 
-  console.log(json);
-
-  console.log(left);
-  console.log(right);
   left.innerHTML = '';
   right.innerHTML = '';
 
@@ -533,16 +458,15 @@ function visualizeParty(text) {
 
   var title, subtitle, breakdown;
   right.appendChild(title = h('h2', '', [h('em', '', ["Tap the map..."])]));
-  right.appendChild(subtitle = h('p.subtitle'));
+  right.appendChild(subtitle = h('p', 'subtitle'));
   right.appendChild(breakdown = h('div', 'breakdown'));
 
   var world = group([]);
 
   var activeRecord;
-  var activePath;
 
-  function deactivate(path) {
-      activePath.classList.remove('country-active');
+  function deactivate() {
+      activeRecord.path.classList.remove('country-active');
   }
 
   records.forEach(function(record) {
@@ -555,17 +479,17 @@ function visualizeParty(text) {
         class: 'country',
       }));
       var activate = function() {
-        if (activePath) deactivate(activePath);
+        if (activeRecord) deactivate();
         title.textContent = record.query;
         subtitle.textContent = region.name;
         activeRecord = record;
-        activePath = path;
         path.classList.add('country-active');
 
         showBreakdown(breakdown, headings, record.row);
       };
       path.addEventListener('mouseover', activate);
       path.addEventListener('touchdown', activate);
+      record.path = path;
 
       //world.appendChild(bbRect(region.boundingbox));
     });
@@ -604,21 +528,28 @@ function visualizeParty(text) {
 
 }
 
+var activeHeading;
+
 function showBreakdown(div, headings, values) {
   div.innerHTML = "";
   var w = div.offsetWidth;
 
-  for (var i=0; i<headings.length; i++) {
-    var heading = headings[i];
+  function deactivate() {
+    activeHeading.label.className = 'label';
+  }
+
+  headings.forEach(function(heading, i) {
     var value = values[i];
     var kind = heading.kind;
-    if (heading.is_region) continue;
-    if (kind === 'empty') continue;
+    if (heading.is_region) return;
+    if (kind === 'empty') return;
 
     var li = h('div', 'stat');
     div.appendChild(li);
 
-    li.appendChild(h('span', 'heading', heading.heading));
+    var label;
+    li.appendChild(label = h('span', 'label', heading.heading));
+    label.title = heading.heading;
 
     switch (kind) {
       case 'text':
@@ -631,10 +562,7 @@ function showBreakdown(div, headings, values) {
         //if (isNaN(heading.max)) break;
         var perc = ((+value.replace(/,/g, '')) / heading.max) * 100;
         wrap.appendChild(bar = h('div', 'percent-bar', [h('span','percent-value', value)]));
-        console.log(perc);
         bar.style.width = perc + '%';
-
-        // TODO graph these
         break;
       case 'enum': // TODO ???
         li.appendChild(h('span', 'value value-enum', value));
@@ -650,7 +578,25 @@ function showBreakdown(div, headings, values) {
       default:
         throw "bad" + kind;
     }
-  }
+    heading.label = label;
+
+    function activate() {
+      if (activeHeading) deactivate();
+      activeHeading = heading;
+      label.className = 'label label-active';
+    }
+    label.addEventListener('click', activate);
+    label.addEventListener('touchdown', activate);
+    if (heading === activeHeading) {
+      activate();
+    }
+
+  });
 
 }
+
+function recolor() {
+
+}
+
 

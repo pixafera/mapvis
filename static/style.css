@@ -25,6 +25,7 @@ body {
   background: #fff;
   color: #000;
   font-size: 16px;
+  min-height: calc(100vh - 2em);
 }
 
 strong {
@@ -266,6 +267,7 @@ rect {
 }
 
 .country {
+  cursor: pointer;
   stroke: black;
   stroke-width: 0.3px;
   fill: #f0ffee;
@@ -292,34 +294,54 @@ h2 .link {
 .subtitle {
   color: #555;
   font-weight: 300;
-  margin: 0 0 2em;
+  margin: 0.125em 0 1em;
+  background: #d2ffcc;
+  display: inline-block;
+  line-height: 1.25em;
 }
 
 .stat {
   position: relative;
   height: 1.5em;
-  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
   padding: 0.25em 0;
 }
+.stat:last-child {
+  border-bottom: none;
+}
 
-.heading, .value {
+.label, .value {
   display: inline;
   position: absolute;
-  margin-right: 1em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.heading {
+.label {
   font-weight: 300;
   width: 14em;
+  margin-right: 1em;
+  cursor: pointer;
+}
+.label-active {
+  font-weight: 500;
+}
+.label-active:before {
+  content: "•";
+  padding-right: 0.25em;
+  font-size: 1.25em;
+  line-height: 1rem;
+  top: 0.125em;
+  position: relative;
 }
 
 .value {
   font-weight: 500;
+  color: #222;
   left: 16em;
   right: 0;
+  margin: 0;
 }
 
 .value-percent {
@@ -331,4 +353,10 @@ h2 .link {
   display: block;
   margin-top: 0.125em;
 }
-.percent-value {float: right;margin-right: 0.25em;color: rgba(0,0,0,0.7);}
+.percent-value {
+  position: absolute;
+  color: rgba(0,0,0,0.7);
+  top: 0.125em;
+  right: 0.125em;
+}
+
