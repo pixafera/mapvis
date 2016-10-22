@@ -1,0 +1,28 @@
+{
+	"folders":
+	[
+		{
+			"path": "/C/Users/Nicholas/Development/mapvis"
+		}
+	],
+	"settings" :{
+		"python_interpreter": "C:\\Users\\Nicholas\\Envs\\mapvis\\Scripts\\python.exe"
+	},
+	"build_systems":
+	[
+	    {
+	        "selector": "source.python",
+	        "path":"C:\\Users\\Nicholas\\Envs\\mapvis\\Scripts;$PATH",
+	        "name": "Run virtualenv python",
+	        "cmd": ["cmd", "/C", "start", "python", "-u", "$file"],
+	        "file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
+
+	        "variants": [
+	            {   "name": "Run all Tests",
+	                "working_dir": "/Users/user/project",
+	                "cmd": ["nosetests"]
+	            } 
+	        ]
+	    }
+	]
+}
