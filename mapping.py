@@ -122,16 +122,24 @@ def gather_regions(query_list, session):
     for query in query_list:
         q = db_query_lookup.get(query)
         if q is None:
+            print("cache miss")
             q = fetch_query(query, session)
 
             if q is not None:
+                print("cache insert")
                 session.add(q)
                 session.commit()
+        else:
+            print("cache hit")
         results.append((query, q))
 
+    # TODO decide the most popular place_rank from the results
+    # TODO return a list of results with equal place_rank (as far as possible)
+
+    # for now, return only the first Region
+    results = [(q, (None if len(b.regions) == 0 else json.loads(b.regions[0].json))) for q, b in results]
+
     return results
-    # decide the most popular place_rank from the results
-    # return a list of results with equal place_rank (as far as possible)
 
 
 #------------------------------------------------------------------------------
@@ -161,9 +169,9 @@ def read_spreadsheet(file_type, stream, session):
     for record, region in zip(records, regions):
         query, region = region
         output.append(dict(
-            row = record,
+            row = record, # TODO actually don't use to_records()
             query = query,
-            region = region.to_dict(),
+            region = region,
         ))
     return dict(
         headings = headings,
