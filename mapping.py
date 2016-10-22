@@ -10,6 +10,7 @@ import chardet
 import pyexcel
 import grequests
 import sqlalchemy.orm
+import svg.path
 
 import model
 
@@ -66,19 +67,27 @@ def query_osm(queries):
         # Only keep a few fields
         reduced_boundaries = []
         for boundary in boundaries:
-            boundary['svg'] = simplify_path(boundary['svg'])
+            boundary['svg'] = simplify_paths(boundary['svg'])
             reduced_boundaries.append(OsmBoundary(**boundary))
         yield r.meta, reduced_boundaries
 
-def simplify_path(svg):
-    segments = svg.split("M ")
-    assert segments.pop(0) == ""
-
-    segments.sort(key=len, reverse=True)
-    segments = segments[:3]
-
-    segments = [simplify_segment("M " + s.rstrip(" ")) for s in segments]
-    return " ".join(segments)
+def simplify_paths(paths):
+    paths = svg.path.parse_path(paths)
+    precision = 1
+    new_path = svg.path.Path()
+    for l in paths:
+        x1 = round(l.start.real, precision)
+        y1 = round(l.start.imag, precision)
+        x2 = round(l.end.real, precision)
+        y2 = round(l.end.imag, precision)
+        if x1 == x2 and y1 == y2:
+            continue
+            
+        new_path.append(svg.path.Line(start=complex(x1, y1), end=complex(x2, y2)))
+    if len(new_path) == 0:
+        return ''
+    else:
+        return new_path.d()
 
 def simplify_segment(svg):
     words = svg.split(" ")
@@ -90,16 +99,22 @@ def simplify_segment(svg):
     first = ['M', words[1], words[2], 'L']
     last = ['Z']
 
-    pairs = [(words[i], words[i+1]) for i in range(4, len(words) - 1, 2)]
+    assert len(words[4:-1]) % 2 == 0
+
+    precision = 1
+    pairs = [(round(float(words[i]), precision), round(float(words[i+1]), precision)) for i in range(4, len(words) - 2, 2)]
 
     # Keep N points
-    limit = 150 # TODO tweak this?
-    try:
-        indexes = random.sample(list(range(len(pairs))), limit)
-        indexes.sort()
-        selected = [" ".join(pairs[i]) for i in indexes]
-    except ValueError:
-        selected = [" ".join(p) for p in pairs]
+    last_point = (round(float(words[1]), precision), round(float(words[2]), precision))
+    selected = [last_point]
+    for point in pairs:
+        if point == last_point:
+            continue
+
+        last_point = point
+        selected.append(point)
+
+    selected = " ".join("{} {}".format(p) for p in selected)
 
     return " ".join(first + selected + last)
 
