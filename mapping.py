@@ -6,7 +6,7 @@ import random
 
 import chardet
 import pyexcel
-import requests
+import grequests
 import sqlalchemy.orm
 
 import model
@@ -16,43 +16,46 @@ import model
 # query & cache OSM
 
 
-def query_osm(query):
-    r = requests.get("http://nominatim.openstreetmap.org/search", params=dict(
-        format = 'jsonv2',
-        q = query,
-        limit = 5,
-        polygon_svg=1,
-    ))
+def query_osm(queries):
+    reqs = [grequests.get("http://nominatim.openstreetmap.org/search",
+                          params=dict(format = 'jsonv2',
+                                      q = query,
+                                      limit = 5,
+                                      polygon_svg=1))
+            for query in queries]
 
-    results = r.json()
+    for r in grequests.imap(reqs):
+        results = r.json()
 
-    boundaries = [item for item in results if item['category'] == 'boundary']
+        boundaries = [item for item in results if item['category'] == 'boundary']
 
-    print("Found {} boundaries".format(len(boundaries)))
+        print("Found {} boundaries".format(len(boundaries)))
 
-    # # Arbitrarily pick the first one -- OSM seems to sort them by importance?
-    # boundary = boundaries[0]
+        # # Arbitrarily pick the first one -- OSM seems to sort them by importance?
+        # boundary = boundaries[0]
 
-    # Only keep a few fields
-    for boundary in boundaries:
-        d = dict(
-            # Key cached objects based on OSM id
-            # -- make sure we don't cache 'em more than once
-            osm_id = int(boundary['osm_id']),
+        # Only keep a few fields
+        reduced_boundaries = []
+        for boundary in boundaries:
+            d = dict(
+                # Key cached objects based on OSM id
+                # -- make sure we don't cache 'em more than once
+                osm_id = int(boundary['osm_id']),
 
-            # Can display in the UI
-            name = boundary['display_name'],
+                # Can display in the UI
+                name = boundary['display_name'],
 
-            place_rank = boundary['place_rank'],
+                place_rank = boundary['place_rank'],
 
-            # default SVG paths are too detailed to store/render!
-            simple_path = simplify_path(boundary['svg']),
+                # default SVG paths are too detailed to store/render!
+                simple_path = simplify_path(boundary['svg']),
 
-            # Might want to keep the centre
-            lat = boundary['lat'],
-            lon = boundary['lon'],
-        )
-        yield d
+                # Might want to keep the centre
+                lat = boundary['lat'],
+                lon = boundary['lon'],
+            )
+            reduced_boundaries.append(d)
+        yield reduced_boundaries
 
 def simplify_path(svg):
     segments = svg.split("M ")
@@ -92,26 +95,27 @@ def simplify_segment(svg):
     return " ".join(first + selected + last)
 
 
-def fetch_query(query, session):
+def fetch_queries(queries, session):
     """Create a Query and associated Regions"""
 
-    q = model.Query(search_string=query)
-    boundary = list(query_osm(query))
-    regions = {r.osm_id: r for r in session.query(model.Region).filter(model.Region.osm_id.in_(b['osm_id'] for b in boundary))}
+    for query, boundary in zip(queries, query_osm(queries)):
+        regions = {r.osm_id: r for r in session.query(model.Region).filter(model.Region.osm_id.in_(b['osm_id'] for b in boundary))}
 
-    # Make regions
-    for b in boundary:
-        if b['osm_id'] in regions:
-            continue
+        # Make regions
+        for b in boundary:
+            if b['osm_id'] in regions:
+                continue
 
-        r = model.Region(osm_id=b['osm_id'], place_rank=b['place_rank'], json=json.dumps(b))
-        regions[r.osm_id] = r
-        session.add(r)
-    session.commit()
+            r = model.Region(osm_id=b['osm_id'], place_rank=b['place_rank'], json=json.dumps(b))
+            regions[r.osm_id] = r
+            session.add(r)
+        session.commit()
 
-    q.regions.extend(regions.values())
+        q = model.Query(search_string=query)
+        q.regions.extend(regions.values())
+        session.commit()
 
-    return q
+        yield q
 
 
 def gather_regions(query_list, session):
@@ -119,25 +123,17 @@ def gather_regions(query_list, session):
     results = []
     db_queries = session.query(model.Query).filter(model.Query.search_string.in_(query_list)).options(sqlalchemy.orm.joinedload(model.Query.regions))
     db_query_lookup = {q.search_string: q for q in db_queries}
-    for query in query_list:
-        q = db_query_lookup.get(query)
-        if q is None:
-            print("cache miss")
-            q = fetch_query(query, session)
 
-            if q is not None:
-                print("cache insert")
-                session.add(q)
-                session.commit()
-        else:
-            print("cache hit")
-        results.append((query, q))
+    queries_to_osm = [q for q in query_list if q not in db_query_lookup]
+    if len(queries_to_osm) > 0:
+        for q in fetch_queries(queries_to_osm, session):
+            db_query_lookup[q.search_string] = q
 
     # TODO decide the most popular place_rank from the results
     # TODO return a list of results with equal place_rank (as far as possible)
 
     # for now, return only the first Region
-    results = [(q, (None if len(b.regions) == 0 else json.loads(b.regions[0].json))) for q, b in results]
+    results = [(q, (None if len(b.regions) == 0 else json.loads(b.regions[0].json))) for q, b in db_query_lookup.items()]
 
     return results
 
