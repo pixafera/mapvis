@@ -163,10 +163,10 @@ def gather_regions(query_list, session):
     modal_place_rank = place_rank_counter.most_common(1)[0][0]
 
     def get_best_region_json(q):
-        best_region = next(iter(sorted((r for r in q.regions if r.region.place_rank == modal_place_rank), key=lambda r:r.importance)), None)
+        best_region = next(iter(sorted((r for r in q.regions if r.region.place_rank == modal_place_rank), key=lambda r:-r.importance)), None)
 
         if best_region is None:
-            best_region = next(iter(sorted(q.regions, key=lambda r:r.importance)), None)
+            best_region = next(iter(sorted(q.regions, key=lambda r:-r.importance)), None)
 
         return json.loads(best_region.region.json) if best_region is not None else None
 
