@@ -5,6 +5,7 @@ import itertools
 import json
 import os
 import random
+import string
 
 import chardet
 import pyexcel
@@ -299,6 +300,8 @@ def read_spreadsheet(file_type, stream, session):
     )
 
 
+def generate_dataset_id():
+    return ''.join(string.ascii_lowercase[random.randint(0, 24)] for i in range(6))
 
 
 if __name__ == '__main__':

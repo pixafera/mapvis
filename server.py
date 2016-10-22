@@ -45,10 +45,18 @@ def upload_file():
 
     session = Session()
 
-    return jsonify(
-        name = name,
-        **read_spreadsheet(file_type, stream, session)
-    )
+    data = read_spreadsheet(file_type, stream, session)
+
+    dataset_id = generate_dataset_id()
+    while session.query(model.Dataset.id).filter(model.Dataset.id==dataset_id).one_or_none() is not None:
+        dataset_id = generate_dataset_id()
+
+    response = jsonify(name=name, dataset_id=dataset_id, **data)
+    dataset = model.Dataset(id=dataset_id, name=name, json=response.data)
+    session.add(dataset)
+    session.commit()
+
+    return response
 
 @app.route("/region/<int:osm_id>")
 def region_json(osm_id):
@@ -61,6 +69,16 @@ def region_json(osm_id):
         return 404
     return jsonify(**json.loads(region.json))
 
+
+@app.route("/dataset/<id>")
+def dataset_json(id, session=None):
+    if session is None:
+        session = Session()
+
+    dataset = session.query(model.Dataset.json).filter(model.Dataset.id == id).scalar()
+    if not dataset:
+        return 404
+    return jsonify(**json.loads(dataset))
 
 
 @app.route("/create")
