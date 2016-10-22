@@ -20,13 +20,13 @@ Session = sessionmaker(bind=engine)
 
 @app.route("/")
 def hello():
-	return "<html><body><form method='POST' action='upload' enctype='multipart/form-data'><input type='file' name='data'/><input type='submit' value='submit'/></form></body></html>"
+    return "<html><body><form method='POST' action='upload' enctype='multipart/form-data'><input type='file' name='data'/><input type='submit' value='submit'/></form></body></html>"
 
 @app.route("/upload", methods=['POST'])
 def upload_file():
-	data_file = request.files['data']
-	print(data_file.filename, data_file)
-	return str(party2.read_spreadsheet(data_file.filename, data_file))
+    data_file = request.files['data']
+    print(data_file.filename, data_file)
+    return str(party2.read_spreadsheet(data_file.filename, data_file))
 
 if __name__ == '__main__':
-	app.run(debug=True)
+    app.run(debug=True)

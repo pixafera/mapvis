@@ -103,6 +103,7 @@ def gather_regions(query_list):
         boundaries = query_osm(query)  #fetch_query(query)
         results.append((query, boundaries))
 
+    return results
     # decide the most popular place_rank from the results
     # return a list of results with equal place_rank (as far as possible)
 

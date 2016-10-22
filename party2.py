@@ -15,7 +15,7 @@ def read_spreadsheet(file_name, contents):
     not_found = [query for query, region in regions if region is None]
     # TODO complain about the ones we couldn't find
 
-    return [r[0] for q, r in regions if r is not None]
+    return [r for q, r in regions if r is not None]
 
     for record, region in zip(records, regions):
         # TODO party!
