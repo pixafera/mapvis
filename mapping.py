@@ -1,6 +1,7 @@
 
 from collections import Counter
 import io
+import itertools
 import json
 import os
 import random
@@ -18,14 +19,22 @@ import model
 
 
 def query_osm(queries):
+    def set_meta(meta):
+        def hook(r, **kwargs):
+            r.meta = meta
+            return r
+        return hook
+
     reqs = [grequests.get("http://nominatim.openstreetmap.org/search",
                           params=dict(format = 'jsonv2',
                                       q = query,
                                       limit = 5,
-                                      polygon_svg=1))
+                                      polygon_svg=1),
+                          callback=set_meta(query))
             for query in queries]
 
-    for r in grequests.imap(reqs):
+    for r in grequests.imap(reqs, size=12):
+
         results = r.json()
 
         boundaries = [item for item in results if item['category'] == 'boundary']
@@ -56,9 +65,14 @@ def query_osm(queries):
                 lat = boundary['lat'],
                 lon = boundary['lon'],
                 boundingbox = boundary['boundingbox'],
+
+                # Need to keep importance in DB
+                # TODO don't store this in the `json` field, since it's
+                # different for each Query!
+                importance = float(boundary['importance'])
             )
             reduced_boundaries.append(d)
-        yield reduced_boundaries
+        yield r.meta, reduced_boundaries
 
 def simplify_path(svg):
     segments = svg.split("M ")
@@ -98,7 +112,7 @@ def simplify_segment(svg):
 def fetch_queries(queries, session):
     """Create a Query and associated Regions"""
 
-    for query, boundary in zip(queries, query_osm(queries)):
+    for query, boundary in query_osm(queries):
         regions = {r.osm_id: r for r in session.query(model.Region).filter(model.Region.osm_id.in_(b['osm_id'] for b in boundary))}
 
         # Make regions
@@ -112,7 +126,9 @@ def fetch_queries(queries, session):
         session.commit()
 
         q = model.Query(search_string=query)
-        q.regions.extend(regions.values())
+        for b in boundary:
+            q.regions.append(model.QueryRegion(query=q, region=regions[b['osm_id']], importance=b['importance']))
+        session.add(q)
         session.commit()
 
         yield q
@@ -125,6 +141,7 @@ def gather_regions(query_list, session):
     db_query_lookup = {q.search_string: q for q in db_queries}
 
     queries_to_osm = [q for q in query_list if q not in db_query_lookup]
+    print('{} queries to OSM'.format(len(queries_to_osm)))
     if len(queries_to_osm) > 0:
         for q in fetch_queries(queries_to_osm, session):
             db_query_lookup[q.search_string] = q
@@ -132,8 +149,17 @@ def gather_regions(query_list, session):
     # TODO decide the most popular place_rank from the results
     # TODO return a list of results with equal place_rank (as far as possible)
 
+    # What place_rank are we looking for?
+    place_rank_counter = Counter(itertools.chain(*(set(r.region.place_rank for r in q.regions) for q in db_query_lookup.values())))
+    print(place_rank_counter)
+    modal_place_rank = place_rank_counter.most_common(1)[0][0]
+
+    def get_best_region_json(q):
+        best_region = next(iter(sorted((r for r in q.regions if r.region.place_rank == modal_place_rank), key=lambda r:r.importance)), None)
+        return json.loads(best_region.region.json) if best_region is not None else None
+
     # for now, return only the first Region
-    results = [(q, (None if len(b.regions) == 0 else json.loads(b.regions[0].json))) for q, b in db_query_lookup.items()]
+    results = {q: get_best_region_json(b) for q, b in db_query_lookup.items()}
 
     return results
 
@@ -228,12 +254,14 @@ def read_spreadsheet(file_type, stream, session):
 
     regions = gather_regions(country_names, session)
 
-    not_found = [query for query, region in regions if region is None]
+    #not_found = [query for query, region in regions if region is None]
     # TODO complain about the ones we couldn't find
 
     out = []
-    for row, region in zip(sheet.rows(), regions):
-        query, region = region
+    for record in records:
+        query = record[headings[0]['heading']]
+        region = regions[query]
+        row = [record[h['heading']] for h in headings]
         out.append(dict(
             row = row,
             region = region,
