@@ -251,8 +251,9 @@ def read_spreadsheet(file_type, stream, session):
     for record in records:
         query = record[headings[0]['heading']]
         region = regions[query]
+        row = [record[h['heading']] for h in headings]
         out.append(dict(
-            row = record,
+            row = row,
             query = query,
             region = region,
         ))
