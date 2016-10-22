@@ -137,15 +137,6 @@ def gather_regions(query_list, session):
 #------------------------------------------------------------------------------
 # read spreadsheet
 
-
-def guess_encoding(raw):
-    print(raw[:200])
-    if b'\xc2\xa3' in raw: # u'£'
-        return 'utf-8'
-    det = chardet.detect(raw)
-    print(det)
-    return det['encoding']
-
 def get_sheet(file_type, stream):
     if file_type == 'csv':
         raw = stream.read()
@@ -153,7 +144,7 @@ def get_sheet(file_type, stream):
         stream = io.StringIO(raw.decode(det['encoding']))
     return pyexcel.get_sheet(file_type=file_type, file_stream=stream, name_columns_by_row=0)
 
-def read_spreadsheet(file_type, stream):
+def read_spreadsheet(file_type, stream, session):
     sheet = get_sheet(file_type, stream)
     headings = sheet.colnames
     records = sheet.to_records()
@@ -168,9 +159,11 @@ def read_spreadsheet(file_type, stream):
 
     output = []
     for record, region in zip(records, regions):
+        query, region = region
         output.append(dict(
             row = record,
-            region = region,
+            query = query,
+            region = region.to_dict(),
         ))
     return dict(
         headings = headings,

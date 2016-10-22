@@ -37,7 +37,7 @@ def upload_file():
     _, ext = os.path.splitext(upload.filename)
     file_type = ext.lstrip(".")
 
-    return jsonify(**read_spreadsheet(file_type, stream))
+    return jsonify(**read_spreadsheet(file_type, stream, Session()))
 
 
 if __name__ == '__main__':
