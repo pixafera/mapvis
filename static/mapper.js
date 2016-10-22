@@ -528,7 +528,7 @@ function visualizeParty(text) {
   // create shapes.
   var w = left.clientWidth;
   var svg = window.svg = newSVG(w, w);
-  svg.appendChild(makeStyle());
+  //svg.appendChild(makeStyle());
   left.appendChild(svg);
 
   var title, subtitle, breakdown;
@@ -571,8 +571,9 @@ function visualizeParty(text) {
     });
   });
 
-  // TODO pan, zoom
   world.style.transformOrigin = 'center';
+  var foo = group([world]);
+  svg.appendChild(foo);
 
   function refresh() {
     var sw = svg.clientWidth;
@@ -590,18 +591,17 @@ function visualizeParty(text) {
     var p = 'translate('+x+'px, '+y+'px) scale(' + scale + ')';
     world.style.transform = p;
 
-    sh = (sw / width * height) * 1.25;
+    sh = (sw / width * height) * 2.25;
     svg.style.height = sh + 'px';
-    var foo = group([world]);
     foo.style.transform = 'translate(' + (sw/2) + 'px, ' + (sh/2) + 'px)';
-
-    svg.appendChild(foo);
 
     if (activeRecord) showBreakdown(breakdown, headings, activeRecord.row);
   }
   refresh();
-
   window.addEventListener('resize', refresh);
+
+  // TODO pan, zoom
+
 }
 
 function showBreakdown(div, headings, values) {
@@ -626,7 +626,14 @@ function showBreakdown(div, headings, values) {
         break;
       case 'float':
       case 'int':
-        li.appendChild(h('span', 'value value-' + kind, value));
+        var wrap, bar;
+        li.appendChild(wrap = h('span', 'value value-' + kind, ""));
+        //if (isNaN(heading.max)) break;
+        var perc = ((+value.replace(/,/g, '')) / heading.max) * 100;
+        wrap.appendChild(bar = h('div', 'percent-bar', [h('span','percent-value', value)]));
+        console.log(perc);
+        bar.style.width = perc + '%';
+
         // TODO graph these
         break;
       case 'enum': // TODO ???
@@ -636,9 +643,9 @@ function showBreakdown(div, headings, values) {
         // TODO graph this
         var wrap, bar;
         li.appendChild(wrap = h('span', 'value value-percent'));
-        var frac = (+value.replace('%', '')) / 100;
-        wrap.appendChild(bar = h('span', 'percent-var'));
-        bar.style.width = (frac * li.offsetWidth) + 'px';
+        var disp = value.replace(/\.[0-9]+/, '')
+        wrap.appendChild(bar = h('div', 'percent-bar', [h('span','percent-value', disp)]));
+        bar.style.width = value;
         break;
       default:
         throw "bad" + kind;

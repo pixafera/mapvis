@@ -73,11 +73,12 @@ em {
   margin: 0 auto;
   padding: 2em 2em;
   width: calc(50% - 4em);
-  float: left;
+  float: right;
 }
 .right.col {
   padding-left: 0
 }
+.left.col {position: fixed;}
 
 .centre {
   text-align: center;
@@ -296,7 +297,9 @@ h2 .link {
 
 .stat {
   position: relative;
-  height: 1.75em;
+  height: 1.5em;
+  border-top: 1px solid #ccc;
+  padding: 0.25em 0;
 }
 
 .heading, .value {
@@ -310,12 +313,22 @@ h2 .link {
 
 .heading {
   font-weight: 300;
-  width: 12em;
+  width: 14em;
 }
 
 .value {
-  font-weight: 700;
-  left: 12em;
+  font-weight: 500;
+  left: 16em;
   right: 0;
 }
 
+.value-percent {
+  margin: 0;
+}
+.percent-bar {
+  height: 1.25em;
+  background: #eca779;
+  display: block;
+  margin-top: 0.125em;
+}
+.percent-value {float: right;margin-right: 0.25em;color: rgba(0,0,0,0.7);}
