@@ -179,7 +179,7 @@ def gather_regions(query_list, session):
 # read spreadsheet
 
 def get_sheet(file_type, stream):
-    if file_type == 'csv':
+    if file_type in ('csv', 'tsv'):
         raw = stream.read()
         det = chardet.detect(raw)
         stream = io.StringIO(raw.decode(det['encoding']))
@@ -231,18 +231,21 @@ def inspect_column(heading, values):
             data['options'] = sorted(counter.keys())
     data['kind'] = kind
 
-    if kind == 'int':
-        for i in range(len(values)):
-            values[i] = int(str(values[i]).replace(",", ""))
-    elif kind in ('float', 'percent'):
-        for i in range(len(values)):
-            try:
-                values[i] = float(str(values[i]).replace("%", ""))
-            except ValueError:
-                values[i] = float('NaN')
     if kind in ('int', 'float'):
-        data['min'] = min(values)
-        data['max'] = max(values)
+        if kind == 'int':
+            for i in range(len(values)):
+                values[i] = int(str(values[i]).replace(",", ""))
+            compare = values
+        elif kind in ('float', 'percent'):
+            compare = []
+            for i in range(len(values)):
+                try:
+                    values[i] = float(str(values[i]).replace("%", ""))
+                    compare.append(values[i])
+                except ValueError:
+                    pass #values[i] = float('NaN')
+        data['min'] = min(compare)
+        data['max'] = max(compare)
     return data
 
 
