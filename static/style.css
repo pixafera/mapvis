@@ -37,6 +37,16 @@ strong {
 
 /*****************************************************************************/
 
+p {
+  margin: 1em 0 0;
+}
+
+em {
+  font-style: normal;
+  color: #555;
+  font-weight: 100;
+}
+
 .header {
   text-align: center;
   margin: 8em 0 2em;
@@ -47,7 +57,7 @@ strong {
 }
 
 .title {
-  font-weight: 700;
+  font-weight: 300;
   text-align: left;
   margin: 1em 2em 0;
   padding: 1em 0;
@@ -64,6 +74,9 @@ strong {
   padding: 2em 2em;
   width: calc(50% - 4em);
   float: left;
+}
+.right.col {
+    padding-left: 0
 }
 
 .centre {
@@ -91,6 +104,7 @@ h2 .link {
 .subtitle {
   color: #555;
   font-weight: 300;
+  margin: 0 0 1em;
 }
 
 .link {
@@ -265,5 +279,11 @@ path {
     stroke: black;
     stroke-width: 0.3px;
     fill: #f0ffee;
+}
+
+rect {
+    stroke: red;
+    stroke-width: 0.3px;
+    fill: none;
 }
 

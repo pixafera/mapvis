@@ -411,6 +411,18 @@ function rect(w, h, props) {
   }));
 }
 
+function bbRect(bbox) {
+  var bot = bbox[0], top = bbox[1], left = bbox[2], right = bbox[3];
+  var width = right - left;
+  var height = top - bot;
+  return el('rect', {
+    x: left,
+    y: -top,
+    width: right - left,
+    height: top - bot,
+  });
+}
+
 /* definitions */
 
 var cssContent = `
@@ -487,6 +499,7 @@ function visualizeParty(text) {
   var json = JSON.parse(text);
   var headings = json.headings;
   var records = json.records;
+  var bbox = json.bbox;
 
   console.log(json);
 
@@ -518,12 +531,35 @@ function visualizeParty(text) {
     };
     path.addEventListener('mouseover', activate);
     path.addEventListener('touchdown', activate);
+
+    paths.push(bbRect(record.region.boundingbox));
   });
   var world = group(paths);
-  svg.appendChild(world);
 
   // TODO pan, zoom
+  world.style.transformOrigin = 'center';
 
-  world.style.transform = 'translate(73px, 223px) scale(4)';
+  var sw = w;
+  var sh = w;
+  var width = bbox[3] - bbox[2];
+  var height = bbox[1] - bbox[0];
+  if (width < 0) throw 'poo';
+  if (height < 0) throw 'poo';
+  var scale = Math.min(sw / width, sh / height);
+  //world.appendChild(bbRect(bbox));
+
+  // Where is the bounding box center?
+  var x = (bbox[2] + bbox[3]) / 2;
+  var y = (bbox[0] + bbox[1]) / 2 + 100;
+
+  var p = 'translate('+x+'px, '+y+'px) scale(' + scale + ')';
+  world.style.transform = p;
+
+  var foo = group([world]);
+  foo.style.transform = 'translate(' + (sw/2) + 'px, ' + (sh/2) + 'px)';
+
+  svg.appendChild(foo);
+
+  debugger;
 }
 

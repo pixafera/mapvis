@@ -25,7 +25,7 @@ class OsmBoundary(object):
         self.simple_path = kwargs['svg']
         self.lat = kwargs['lat']
         self.lon = kwargs['lon']
-        self.boundingbox = kwargs['boundingbox']
+        self.boundingbox = list(map(float, kwargs['boundingbox']))
         self.importance = kwargs['importance']
 
     def to_json(self):
@@ -234,7 +234,6 @@ def inspect_column(heading, values):
 def read_spreadsheet(file_type, stream, session):
     sheet = get_sheet(file_type, stream)
     headings = sheet.colnames
-    records = sheet.to_records()
 
     # TODO tag headings with what their data looks like
     columns = list(sheet.columns())
@@ -254,19 +253,31 @@ def read_spreadsheet(file_type, stream, session):
     # TODO complain about regions with zero search results
 
     out = []
-    for record in records:
-        query = record[headings[0]['heading']]
+    for row in sheet.rows():
+        query = row[index]
         region = regions[query]
-        row = [record[h['heading']] for h in headings]
         out.append(dict(
             row = row,
             region = region,
             query = query, # redundant but oh well
         ))
 
+
+    # normally bbox = left,bottom,right,top
+    # but Nominatim gives south,north,west,east
+    bboxes = [region['boundingbox'] for region in regions.values() if region]
+    bot = min(bot for bot, top, left, right in bboxes)
+    top = max(bot for bot, top, left, right in bboxes)
+    left = min(bot for bot, top, left, right in bboxes)
+    right = max(bot for bot, top, left, right in bboxes)
+    assert bot < top
+    assert left < right
+    print([bot, top, left, right])
+
     return dict(
         headings = headings,
         records = out,
+        bbox = [bot, top, left, right],
     )
 
 
