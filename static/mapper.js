@@ -537,6 +537,13 @@ function visualizeParty(text) {
 
   var world = group([]);
 
+  var activeRecord;
+  var activePath;
+
+  function deactivate(path) {
+      activePath.classList.remove('country-active');
+  }
+
   records.forEach(function(record) {
     if (record.region_osm_id == null) return;
     get('/region/' + record.region_osm_id, function(region) {
@@ -544,11 +551,15 @@ function visualizeParty(text) {
       var path;
       world.appendChild(path = el('path', {
         d: region.simple_path,
+        class: 'country',
       }));
       var activate = function() {
-        console.log(record);
+        if (activePath) deactivate(activePath);
         title.textContent = record.query;
         subtitle.textContent = region.name;
+        activeRecord = record;
+        activePath = path;
+        path.classList.add('country-active');
       };
       path.addEventListener('mouseover', activate);
       path.addEventListener('touchdown', activate);
@@ -576,6 +587,8 @@ function visualizeParty(text) {
     var p = 'translate('+x+'px, '+y+'px) scale(' + scale + ')';
     world.style.transform = p;
 
+    sh = (sw / width * height) * 1.25;
+    svg.style.height = sh + 'px';
     var foo = group([world]);
     foo.style.transform = 'translate(' + (sw/2) + 'px, ' + (sh/2) + 'px)';
 

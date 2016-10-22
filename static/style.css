@@ -76,7 +76,7 @@ em {
   float: left;
 }
 .right.col {
-    padding-left: 0
+  padding-left: 0
 }
 
 .centre {
@@ -255,17 +255,17 @@ h3 {
 /*****************************************************************************/
 
 #file-picker input[type=file] {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 1000px;
-    height: 1000px;
-    font-size: 100px;
-    opacity: 0;
-    z-index: 0;
-    cursor: pointer;
-    margin: 0;
-    padding: 0;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1000px;
+  height: 1000px;
+  font-size: 100px;
+  opacity: 0;
+  z-index: 0;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
 }
 
 /*****************************************************************************/
@@ -275,15 +275,20 @@ svg {
   width: 100%;
 }
 
-path {
-    stroke: black;
-    stroke-width: 0.3px;
-    fill: #f0ffee;
+rect {
+  stroke: red;
+  stroke-width: 0.3px;
+  fill: none;
 }
 
-rect {
-    stroke: red;
-    stroke-width: 0.3px;
-    fill: none;
+.country {
+  stroke: black;
+  stroke-width: 0.3px;
+  fill: #f0ffee;
+}
+
+.country.country-active {
+  stroke-width: 1.2px;
+  stroke: #429ed7;
 }
 
