@@ -451,8 +451,8 @@ function visualizeParty(json) {
   right.innerHTML = '';
 
   // create shapes.
-  var w = left.clientWidth;
-  var svg = window.svg = newSVG(w, w);
+  //var w = left.clientWidth;
+  var svg = window.svg = newSVG(300, 300);
   //svg.appendChild(makeStyle());
   left.appendChild(svg);
 
@@ -502,8 +502,11 @@ function visualizeParty(json) {
   function refresh() {
     var sw = svg.clientWidth;
     var sh = svg.clientHeight;
+    console.log(sw, sh);
+
     var width = bbox[3] - bbox[2];
     var height = bbox[1] - bbox[0];
+
     if (width < 0) throw 'poo';
     if (height < 0) throw 'poo';
     var scale = Math.min(sw / width, sh / height);
@@ -515,8 +518,8 @@ function visualizeParty(json) {
     var p = 'translate('+x+'px, '+y+'px) scale(' + scale + ')';
     world.style.transform = p;
 
-    sh = (sw / width * height) * 2.25;
-    svg.style.height = sh + 'px';
+    //sh = (sw / width * height) * 2.25;
+    //svg.style.height = sh + 'px';
     foo.style.transform = 'translate(' + (sw/2) + 'px, ' + (sh/2) + 'px)';
 
     if (activeRecord) showBreakdown(breakdown, headings, activeRecord.row);
