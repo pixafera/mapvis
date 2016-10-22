@@ -17,14 +17,22 @@ import model
 
 
 def query_osm(queries):
+    def set_meta(meta):
+        def hook(r, **kwargs):
+            r.meta = meta
+            return r
+        return hook
+
     reqs = [grequests.get("http://nominatim.openstreetmap.org/search",
                           params=dict(format = 'jsonv2',
                                       q = query,
                                       limit = 5,
-                                      polygon_svg=1))
+                                      polygon_svg=1),
+                          callback=set_meta(query))
             for query in queries]
 
-    for r in grequests.imap(reqs):
+    for r in grequests.imap(reqs, size=12):
+
         results = r.json()
 
         boundaries = [item for item in results if item['category'] == 'boundary']
@@ -55,7 +63,7 @@ def query_osm(queries):
                 lon = boundary['lon'],
             )
             reduced_boundaries.append(d)
-        yield reduced_boundaries
+        yield r.meta, reduced_boundaries
 
 def simplify_path(svg):
     segments = svg.split("M ")
@@ -98,7 +106,7 @@ def simplify_segment(svg):
 def fetch_queries(queries, session):
     """Create a Query and associated Regions"""
 
-    for query, boundary in zip(queries, query_osm(queries)):
+    for query, boundary in query_osm(queries):
         regions = {r.osm_id: r for r in session.query(model.Region).filter(model.Region.osm_id.in_(b['osm_id'] for b in boundary))}
 
         # Make regions
@@ -133,7 +141,7 @@ def gather_regions(query_list, session):
     # TODO return a list of results with equal place_rank (as far as possible)
 
     # for now, return only the first Region
-    results = [(q, (None if len(b.regions) == 0 else json.loads(b.regions[0].json))) for q, b in db_query_lookup.items()]
+    results = {q: (None if len(b.regions) == 0 else json.loads(b.regions[0].json)) for q, b in db_query_lookup.items()}
 
     return results
 
@@ -158,12 +166,13 @@ def read_spreadsheet(file_type, stream, session):
 
     regions = gather_regions(country_names, session)
 
-    not_found = [query for query, region in regions if region is None]
+    #not_found = [query for query, region in regions if region is None]
     # TODO complain about the ones we couldn't find
 
     output = []
-    for record, region in zip(records, regions):
-        query, region = region
+    for record in records:
+        query = record[headings[0]]
+        region = regions[record[headings[0]]]
         output.append(dict(
             row = record, # TODO actually don't use to_records()
             query = query,
