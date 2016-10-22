@@ -531,9 +531,10 @@ function visualizeParty(text) {
   svg.appendChild(makeStyle());
   left.appendChild(svg);
 
-  var title, subtitle;
+  var title, subtitle, breakdown;
   right.appendChild(title = h('h2', '', [h('em', '', ["Tap the map..."])]));
   right.appendChild(subtitle = h('p.subtitle'));
+  right.appendChild(breakdown = h('div', 'breakdown'));
 
   var world = group([]);
 
@@ -560,6 +561,8 @@ function visualizeParty(text) {
         activeRecord = record;
         activePath = path;
         path.classList.add('country-active');
+
+        showBreakdown(breakdown, headings, record.row);
       };
       path.addEventListener('mouseover', activate);
       path.addEventListener('touchdown', activate);
@@ -593,9 +596,54 @@ function visualizeParty(text) {
     foo.style.transform = 'translate(' + (sw/2) + 'px, ' + (sh/2) + 'px)';
 
     svg.appendChild(foo);
+
+    if (activeRecord) showBreakdown(breakdown, headings, activeRecord.row);
   }
   refresh();
 
   window.addEventListener('resize', refresh);
+}
+
+function showBreakdown(div, headings, values) {
+  div.innerHTML = "";
+  var w = div.offsetWidth;
+
+  for (var i=0; i<headings.length; i++) {
+    var heading = headings[i];
+    var value = values[i];
+    var kind = heading.kind;
+    if (heading.is_region) continue;
+    if (kind === 'empty') continue;
+
+    var li = h('div', 'stat');
+    div.appendChild(li);
+
+    li.appendChild(h('span', 'heading', heading.heading));
+
+    switch (kind) {
+      case 'text':
+        li.appendChild(h('span', 'value value-text', value));
+        break;
+      case 'float':
+      case 'int':
+        li.appendChild(h('span', 'value value-' + kind, value));
+        // TODO graph these
+        break;
+      case 'enum': // TODO ???
+        li.appendChild(h('span', 'value value-enum', value));
+        break;
+      case 'percent':
+        // TODO graph this
+        var wrap, bar;
+        li.appendChild(wrap = h('span', 'value value-percent'));
+        var frac = (+value.replace('%', '')) / 100;
+        wrap.appendChild(bar = h('span', 'percent-var'));
+        bar.style.width = (frac * li.offsetWidth) + 'px';
+        break;
+      default:
+        throw "bad" + kind;
+    }
+  }
+
 }
 

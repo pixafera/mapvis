@@ -89,23 +89,6 @@ em {
   margin: 1.25em 0;
 }
 
-h2 {
-  font-size: 1.5em;
-  font-weight: 300;
-  margin: 0;
-  line-height: 1em;
-}
-
-h2 .link {
-  font-size: 1rem;
-  line-height: 1.5em;
-}
-
-.subtitle {
-  color: #555;
-  font-weight: 300;
-  margin: 0 0 1em;
-}
 
 .link {
   font-weight: normal;
@@ -290,5 +273,49 @@ rect {
 .country.country-active {
   stroke-width: 1.2px;
   stroke: #429ed7;
+}
+
+/*****************************************************************************/
+
+h2 {
+  font-size: 1.5em;
+  font-weight: 300;
+  margin: 0;
+  line-height: 1em;
+}
+
+h2 .link {
+  font-size: 1rem;
+  line-height: 1.5em;
+}
+.subtitle {
+  color: #555;
+  font-weight: 300;
+  margin: 0 0 2em;
+}
+
+.stat {
+  position: relative;
+  height: 1.75em;
+}
+
+.heading, .value {
+  display: inline;
+  position: absolute;
+  margin-right: 1em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.heading {
+  font-weight: 300;
+  width: 12em;
+}
+
+.value {
+  font-weight: 700;
+  left: 12em;
+  right: 0;
 }
 
