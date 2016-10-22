@@ -54,6 +54,10 @@ strong {
   border-bottom: 1px solid #555;
 }
 
+.title a {
+  background: #f0ffee;
+}
+
 .col {
   /* max-width: 42em; */
   margin: 0 auto;
@@ -74,8 +78,8 @@ strong {
 
 h2 {
   font-size: 1.5em;
-  font-weight: 700;
-  margin: 0 0 0.5em;
+  font-weight: 300;
+  margin: 0;
   line-height: 1em;
 }
 
@@ -84,6 +88,10 @@ h2 .link {
   line-height: 1.5em;
 }
 
+.subtitle {
+  color: #555;
+  font-weight: 300;
+}
 
 .link {
   font-weight: normal;
@@ -255,7 +263,7 @@ svg {
 
 path {
     stroke: black;
-    stroke-width: 1px;
-    fill: white;
+    stroke-width: 0.3px;
+    fill: #f0ffee;
 }
 

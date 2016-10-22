@@ -167,6 +167,7 @@ var post = function(url, obj, cb) {
 /*****************************************************************************/
 
 /* drag in files */
+// TODO allow dragging anywhere in window
 
 function cancel(e) {
   e.preventDefault();
@@ -500,19 +501,29 @@ function visualizeParty(text) {
   svg.appendChild(makeStyle());
   left.appendChild(svg);
 
+  var title, subtitle;
+  right.appendChild(title = h('h2', h('em', "Tap the map...")));
+  right.appendChild(subtitle = h('p.subtitle', ""));
+
   var paths = [];
-  for (var i=0; i<records.length; i++) {
-    var record = records[i];
-    paths.push(el('path', {
+  records.forEach(function(record) {
+    var path;
+    paths.push(path = el('path', {
       d: record.region.simple_path,
     }));
-  }
-  svg.appendChild(group(paths));
+    var activate = function() {
+      console.log(record);
+      title.textContent = record.query;
+      subtitle.textContent = record.region.name;
+    };
+    path.addEventListener('mouseover', activate);
+    path.addEventListener('touchdown', activate);
+  });
+  var world = group(paths);
+  svg.appendChild(world);
 
-  // create thingy
-  right.appendChild(h('h2', record.query));
-  right.appendChild(h('p.subtitle', record.region.name));
+  // TODO pan, zoom
 
-  // TODO draw svg ...
+  world.style.transform = 'translate(73px, 223px) scale(4)';
 }
 
