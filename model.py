@@ -41,3 +41,11 @@ class QueryRegion(Base):
 
 	def to_dict(self):
 		return dict(importance=self.importance, **self.region.to_dict())
+
+
+class Dataset(Base):
+	__tablename__ = 'dataset'
+
+	id = Column(String, primary_key=True)
+	name = Column(String)
+	json = Column(String)
