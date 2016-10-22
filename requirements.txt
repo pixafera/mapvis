@@ -1,0 +1,7 @@
+Flask==0.11.1
+grequests==0.3.0
+pyexcel==0.2.5
+pyexcel-io==0.2.3
+pyexcel-xls==0.2.3
+SQLAlchemy==1.1.2
+
