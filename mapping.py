@@ -17,6 +17,25 @@ import model
 #------------------------------------------------------------------------------
 # query & cache OSM
 
+class OsmBoundary(object):
+    def __init__(self, **kwargs):
+        self.osm_id = int(kwargs['osm_id'])
+        self.name = kwargs['display_name']
+        self.place_rank = kwargs['place_rank']
+        self.simple_path = kwargs['svg']
+        self.lat = kwargs['lat']
+        self.lon = kwargs['lon']
+        self.boundingbox = kwargs['boundingbox']
+        self.importance = kwargs['importance']
+
+    def to_json(self):
+        return json.dumps(dict(osm_id=self.osm_id,
+                               name=self.name,
+                               place_rank=self.place_rank,
+                               simple_path=self.simple_path,
+                               lat=self.lat,
+                               lon=self.lon,
+                               boundingbox=self.boundingbox))
 
 def query_osm(queries):
     def set_meta(meta):
@@ -47,30 +66,8 @@ def query_osm(queries):
         # Only keep a few fields
         reduced_boundaries = []
         for boundary in boundaries:
-            d = dict(
-                # Key cached objects based on OSM id
-                # -- make sure we don't cache 'em more than once
-                osm_id = int(boundary['osm_id']),
-
-                # Can display in the UI
-                name = boundary['display_name'],
-
-                place_rank = boundary['place_rank'],
-
-                # default SVG paths are too detailed to store/render!
-                simple_path = simplify_path(boundary['svg']),
-
-                # Might want to keep the centre
-                lat = boundary['lat'],
-                lon = boundary['lon'],
-                boundingbox = boundary['boundingbox'],
-
-                # Need to keep importance in DB
-                # TODO don't store this in the `json` field, since it's
-                # different for each Query!
-                importance = float(boundary['importance'])
-            )
-            reduced_boundaries.append(d)
+            boundary['svg'] = simplify_path(boundary['svg'])
+            reduced_boundaries.append(OsmBoundary(**boundary))
         yield r.meta, reduced_boundaries
 
 def simplify_path(svg):
@@ -111,21 +108,21 @@ def fetch_queries(queries, session):
     """Create a Query and associated Regions"""
 
     for query, boundary in query_osm(queries):
-        regions = {r.osm_id: r for r in session.query(model.Region).filter(model.Region.osm_id.in_(b['osm_id'] for b in boundary))}
+        regions = {r.osm_id: r for r in session.query(model.Region).filter(model.Region.osm_id.in_(b.osm_id for b in boundary))}
 
         # Make regions
         for b in boundary:
-            if b['osm_id'] in regions:
+            if b.osm_id in regions:
                 continue
 
-            r = model.Region(osm_id=b['osm_id'], place_rank=b['place_rank'], json=json.dumps(b))
+            r = model.Region(osm_id=b.osm_id, place_rank=b.place_rank, json=b.to_json())
             regions[r.osm_id] = r
             session.add(r)
         session.commit()
 
         q = model.Query(search_string=query)
         for b in boundary:
-            q.regions.append(model.QueryRegion(query=q, region=regions[b['osm_id']], importance=b['importance']))
+            q.regions.append(model.QueryRegion(query=q, region=regions[b.osm_id], importance=b.importance))
         session.add(q)
         session.commit()
 
@@ -151,6 +148,10 @@ def gather_regions(query_list, session):
 
     def get_best_region_json(q):
         best_region = next(iter(sorted((r for r in q.regions if r.region.place_rank == modal_place_rank), key=lambda r:r.importance)), None)
+
+        if best_region is None:
+            best_region = next(iter(sorted(q.regions, key=lambda r:r.importance)), None)
+
         return json.loads(best_region.region.json) if best_region is not None else None
 
     # for now, return only the first Region
