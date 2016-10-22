@@ -518,10 +518,6 @@ function visualizeParty(text) {
   var records = json.records;
   var bbox = json.bbox;
 
-  console.log(json);
-
-  console.log(left);
-  console.log(right);
   left.innerHTML = '';
   right.innerHTML = '';
 
@@ -539,10 +535,9 @@ function visualizeParty(text) {
   var world = group([]);
 
   var activeRecord;
-  var activePath;
 
-  function deactivate(path) {
-      activePath.classList.remove('country-active');
+  function deactivate() {
+      activeRecord.path.classList.remove('country-active');
   }
 
   records.forEach(function(record) {
@@ -555,17 +550,17 @@ function visualizeParty(text) {
         class: 'country',
       }));
       var activate = function() {
-        if (activePath) deactivate(activePath);
+        if (activeRecord) deactivate();
         title.textContent = record.query;
         subtitle.textContent = region.name;
         activeRecord = record;
-        activePath = path;
         path.classList.add('country-active');
 
         showBreakdown(breakdown, headings, record.row);
       };
       path.addEventListener('mouseover', activate);
       path.addEventListener('touchdown', activate);
+      record.path = path;
 
       //world.appendChild(bbRect(region.boundingbox));
     });
@@ -604,22 +599,27 @@ function visualizeParty(text) {
 
 }
 
+var activeHeading;
+
 function showBreakdown(div, headings, values) {
   div.innerHTML = "";
   var w = div.offsetWidth;
 
-  for (var i=0; i<headings.length; i++) {
-    var heading = headings[i];
+  function deactivate() {
+    activeHeading.label.className = 'label';
+  }
+
+  headings.forEach(function(heading, i) {
     var value = values[i];
     var kind = heading.kind;
-    if (heading.is_region) continue;
-    if (kind === 'empty') continue;
+    if (heading.is_region) return;
+    if (kind === 'empty') return;
 
     var li = h('div', 'stat');
     div.appendChild(li);
 
     var label;
-    li.appendChild(label = h('span', 'heading', heading.heading));
+    li.appendChild(label = h('span', 'label', heading.heading));
     label.title = heading.heading;
 
     switch (kind) {
@@ -633,10 +633,7 @@ function showBreakdown(div, headings, values) {
         //if (isNaN(heading.max)) break;
         var perc = ((+value.replace(/,/g, '')) / heading.max) * 100;
         wrap.appendChild(bar = h('div', 'percent-bar', [h('span','percent-value', value)]));
-        console.log(perc);
         bar.style.width = perc + '%';
-
-        // TODO graph these
         break;
       case 'enum': // TODO ???
         li.appendChild(h('span', 'value value-enum', value));
@@ -652,7 +649,20 @@ function showBreakdown(div, headings, values) {
       default:
         throw "bad" + kind;
     }
-  }
+    heading.label = label;
+
+    function activate() {
+      if (activeHeading) deactivate();
+      activeHeading = heading;
+      label.className = 'label label-active';
+    }
+    label.addEventListener('click', activate);
+    label.addEventListener('touchdown', activate);
+    if (heading === activeHeading) {
+      activate();
+    }
+
+  });
 
 }
 
