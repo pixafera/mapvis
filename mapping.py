@@ -249,8 +249,11 @@ def inspect_column(heading, values):
     if kind in ('int', 'float'):
         if kind == 'int':
             for i in range(len(values)):
-                values[i] = int(str(values[i]).replace(",", ""))
-            compare = values
+                try:
+                    values[i] = int(str(values[i]).replace(",", ""))
+                    compare.append(values[i])
+                except ValueError:
+                    pass
         elif kind in ('float', 'percent'):
             compare = []
             for i in range(len(values)):
