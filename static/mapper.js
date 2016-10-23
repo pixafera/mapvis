@@ -673,7 +673,6 @@ function percentColor(index, percent, log) {
   var alpha = +((''+percent).replace('%', '').replace(/,/, '')) / 100;
   if (log) alpha = logify(alpha)
   var out = colors[index % 5].replace("X", alpha);
-  console.log(percent, out);
   return out;
 }
 
