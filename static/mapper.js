@@ -156,7 +156,7 @@ function loadFiles(files) {
 
           var json = JSON.parse(text);
 
-          var title = json.name + " · mapvis";
+          var title = json.name + " · mapthis";
           history.pushState({}, title, '/doc/' + json.dataset_id)
 
           visualizeParty(json);
@@ -444,7 +444,7 @@ var activeRecord;
 
 function visualizeParty(json) {
   console.log(json);
-  var title = json.name + " · mapvis";
+  var title = json.name + " · mapthis";
   document.title = title;
 
   headings = json.headings;
