@@ -70,11 +70,12 @@ def query_osm(queries):
         reduced_boundaries = []
         for boundary in boundaries:
             boundary['boundingbox'] = [float(s) for s in boundary['boundingbox']]
-            boundary['svg'] = simplify_paths(boundary['svg'], boundary['boundingbox'])
+            boundary['place_rank'] = int(boundary['place_rank'])
+            boundary['svg'] = simplify_paths(boundary['svg'], boundary['place_rank'])
             reduced_boundaries.append(OsmBoundary(**boundary))
         yield r.meta, reduced_boundaries
 
-def simplify_paths(paths, boundingbox):
+def simplify_paths(paths, place_rank):
     paths = svg.path.parse_path(paths)
 
     # Work out the precision
@@ -82,10 +83,12 @@ def simplify_paths(paths, boundingbox):
     # We work out the precision by finding the order of the dimensions.
     # log10 returns +ve for left of the decimal point, but round wants +ve for right of the decimal point
     # We want to display the map up to about 1000 pixels, so we add 3 orders to the precision we require.
-    south, north, west, east = boundingbox
-    dimensions = (north - south, east - west)
-    precision = min(-math.ceil(math.log10(abs(d))) + 3 for d in dimensions)
-    print("Precision: {}".format(precision))
+    #south, north, west, east = boundingbox
+    #dimensions = (north - south, east - west)
+    #precision = min(-math.ceil(math.log10(abs(d))) + 3 for d in dimensions)
+    #print("Precision: {}".format(precision))
+
+    precision = 1 if place_rank < 10 else 2
     new_path = svg.path.Path()
     for l in paths:
         x1 = round(l.start.real, precision)
