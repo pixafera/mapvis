@@ -438,13 +438,17 @@ if (/^\/doc\//.test(location.pathname)) {
   get('/doc/' + dataset_id + '.json', visualizeParty);
 }
 
+var records;
+var headings;
+var activeRecord;
+
 function visualizeParty(json) {
   console.log(json);
   var title = json.name + " · mapvis";
   document.title = title;
 
-  var headings = json.headings;
-  var records = json.records;
+  headings = json.headings;
+  records = json.records;
   var bbox = json.bbox;
 
   left.innerHTML = '';
@@ -461,8 +465,6 @@ function visualizeParty(json) {
   right.appendChild(breakdown = h('div', 'breakdown'));
 
   var world = group([]);
-
-  var activeRecord;
 
   function deactivate() {
     activeRecord.path.classList.remove('country-active');
@@ -517,8 +519,6 @@ function visualizeParty(json) {
     var x = (bbox[2] + bbox[3]) / 2;
     var y = (bbox[0] + bbox[1]) / 2;
 
-    console.log(x, y, sw, sh, scale);
-
     var p = 'translate('+x+'px, '+y+'px) scale(' + scale + ')';
     world.style.transform = p;
 
@@ -543,6 +543,7 @@ function visualizeParty(json) {
 var activeHeading;
 
 function showBreakdown(div, headings, values) {
+  var scroll = document.body.scrollTop;
   div.innerHTML = "";
   var w = div.offsetWidth;
 
@@ -563,6 +564,8 @@ function showBreakdown(div, headings, values) {
     li.appendChild(label = h('span', 'label', heading.heading));
     label.title = heading.heading;
 
+    var canActivate = false;
+
     switch (kind) {
       case 'text':
         li.appendChild(h('span', 'value value-text', value));
@@ -577,7 +580,13 @@ function showBreakdown(div, headings, values) {
         bar.style.width = perc + '%';
         break;
       case 'enum': // TODO ???
-        li.appendChild(h('span', 'value value-enum', value));
+        if (heading.options.length <= 5) {
+          var index = heading.options.indexOf(value);
+          li.appendChild(h('span', 'value value-enum bg-' + index, value));
+          canActivate = true;
+        } else {
+          li.appendChild(h('span', 'value value-text', value));
+        }
         break;
       case 'percent':
         // TODO graph this
@@ -594,8 +603,13 @@ function showBreakdown(div, headings, values) {
 
     function activate() {
       if (activeHeading) deactivate();
+      if (!canActivate) {
+        recolor(-1);
+        return;
+      }
       activeHeading = heading;
       label.className = 'label label-active';
+      recolor(i);
     }
     label.addEventListener('click', activate);
     label.addEventListener('touchdown', activate);
@@ -605,10 +619,34 @@ function showBreakdown(div, headings, values) {
 
   });
 
+  document.body.scrollTop = scroll;
+
 }
 
-function recolor() {
+function recolor(index) {
+  var heading = activeHeading;
+  //if (heading !== headings[index]) throw 'oops';
+  var kind = heading.kind;
 
+  for (var i=0; i<records.length; i++) {
+    var record = records[i];
+    var path = record.path;
+    if (!path) continue;
+    var value = record.row[index];
+
+    var cls = record === activeRecord ? 'country country-active' : 'country'; 
+    path.setAttribute('class', cls);
+
+    if (index === -1) continue;
+    switch (kind) {
+      case 'enum':
+        path.classList.add('fill-' + heading.options.indexOf(value));
+        // console.log(cls + ' fill-' + 
+        // path.className = cls + ' fill-' + heading.options.indexOf(value);
+        // console.log(path.className);
+        break;
+    }
+  }
 }
 
 
