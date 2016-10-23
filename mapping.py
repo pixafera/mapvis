@@ -3,6 +3,7 @@ from collections import Counter
 import io
 import itertools
 import json
+import math
 import os
 import random
 import string
@@ -68,13 +69,23 @@ def query_osm(queries):
         # Only keep a few fields
         reduced_boundaries = []
         for boundary in boundaries:
-            boundary['svg'] = simplify_paths(boundary['svg'])
+            boundary['boundingbox'] = [float(s) for s in boundary['boundingbox']]
+            boundary['svg'] = simplify_paths(boundary['svg'], boundary['boundingbox'])
             reduced_boundaries.append(OsmBoundary(**boundary))
         yield r.meta, reduced_boundaries
 
-def simplify_paths(paths):
+def simplify_paths(paths, boundingbox):
     paths = svg.path.parse_path(paths)
-    precision = 1 # TODO adaptive!
+
+    # Work out the precision
+    # precision is dynamic based on bounding box size, so smaller regions get more detail
+    # We work out the precision by finding the order of the dimensions.
+    # log10 returns +ve for left of the decimal point, but round wants +ve for right of the decimal point
+    # We want to display the map up to about 1000 pixels, so we add 3 orders to the precision we require.
+    south, north, west, east = boundingbox
+    dimensions = (north - south, east - west)
+    precision = min(-math.ceil(math.log10(abs(d))) + 3 for d in dimensions)
+    print("Precision: {}".format(precision))
     new_path = svg.path.Path()
     for l in paths:
         x1 = round(l.start.real, precision)
