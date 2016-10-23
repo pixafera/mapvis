@@ -151,7 +151,7 @@ em {
 .button-fill  { background: #9AC0EF; box-shadow: 0 4px #7298C5; }
 .button-fill:active {                box-shadow: 0 2px #7298C5; }
 
-.button-white {border: 2px solid #D2D5E2;box-shadow: 0 4px #D2D5E2;background: hsl(196, 100%, 39%);}
+.button-white {border: 2px solid #D2D5E2;box-shadow: 0 4px #D2D5E2;}
 .button-white:active {                     box-shadow: 0 2px #D2D5E2; }
 
 .button-icon {
@@ -274,6 +274,9 @@ rect {
   fill: #f0ffee;
   vector-effect: non-scaling-stroke;
 }
+.country-vis {
+  fill: #fff;
+}
 
 .country.country-active {
   stroke-width: 1.2px;
@@ -366,7 +369,7 @@ h2 .link {
 }
 .percent-bar {
   height: 1.25em;
-  background: #eca779;
+  /* background: #eca779; */
   display: block;
   margin-top: 0.125em;
 }

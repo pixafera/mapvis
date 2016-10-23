@@ -97,7 +97,7 @@ def simplify_paths(paths, place_rank):
         y2 = round(l.end.imag, precision)
         if x1 == x2 and y1 == y2:
             continue
-            
+
         new_path.append(svg.path.Line(start=complex(x1, y1), end=complex(x2, y2)))
     if len(new_path) == 0:
         return ''
@@ -255,7 +255,7 @@ def inspect_column(heading, values):
             compare = []
             for i in range(len(values)):
                 try:
-                    values[i] = float(str(values[i]).replace("%", ""))
+                    values[i] = float(str(values[i]).replace(",", "").replace("%", ""))
                     compare.append(values[i])
                 except ValueError:
                     pass #values[i] = float('NaN')

@@ -576,7 +576,7 @@ function showBreakdown(div, headings, values) {
         li.appendChild(wrap = h('span', 'value value-' + kind, ""));
         //if (isNaN(heading.max)) break;
         var perc = ((+value.replace(/,/g, '')) / heading.max) * 100;
-        wrap.appendChild(bar = h('div', 'percent-bar', [h('span','percent-value', value)]));
+        wrap.appendChild(bar = h('div', 'percent-bar bg-' + (i % 5), [h('span','percent-value', value)]));
         bar.style.width = perc + '%';
         canActivate = true;
         break;
@@ -593,8 +593,9 @@ function showBreakdown(div, headings, values) {
         var wrap, bar;
         li.appendChild(wrap = h('span', 'value value-percent'));
         var disp = value.replace(/\.[0-9]+/, '')
-        wrap.appendChild(bar = h('div', 'percent-bar', [h('span','percent-value', disp)]));
+        wrap.appendChild(bar = h('div', 'percent-bar bg-' + (i % 5), [h('span','percent-value', disp)]));
         bar.style.width = value;
+        bar.style.background = percentColor(i % 5, value);
         canActivate = true;
         break;
       default:
@@ -631,26 +632,46 @@ function recolor(index) {
     if (!path) continue;
     var value = record.row[index];
 
-    var cls = record === activeRecord ? 'country country-active' : 'country'; 
+    var cls = record === activeRecord ? 'country country-vis country-active' : 'country country-vis';
     path.style.fill = '';
     path.setAttribute('class', cls);
+
+    var c = index % 5;
 
     if (index === -1) continue;
     switch (kind) {
       case 'enum':
         path.classList.add('fill-' + heading.options.indexOf(value));
-        // console.log(cls + ' fill-' + 
+        // console.log(cls + ' fill-' +
         // path.className = cls + ' fill-' + heading.options.indexOf(value);
         // console.log(path.className);
         break;
       case 'float':
       case 'int':
-        value = (+(''+value).replace(/,/g, '')) / heading.max * 100;
+        path.style.fill = percentColor(c, (+value) * 100, true);
+        break;
       case 'percent':
-        path.style.fill = 'rgba(0, 145, 198, ' + (+(''+value).replace('%', '') / 100) + ')'; //'hsl(196, 100%, 39%)';
+        path.style.fill = percentColor(c, value);
         break;
     }
   }
 }
 
+var colors = [
+  'rgba(255, 229, 86, X)',
+  'rgba(186, 116, 204, X)',
+  'rgba(242, 116, 140, X)',
+  'rgba(68, 175, 196, X)',
+  'rgba(25, 211, 155, X)',
+];
+
+function percentColor(index, percent, log) {
+  var alpha = +((''+percent).replace('%', '').replace(/,/, '')) / 100;
+  if (log) alpha = logify(alpha)
+  return colors[index % 5].replace("X", alpha);
+}
+
+function logify(frac) {
+  return frac;
+}
 
