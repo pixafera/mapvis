@@ -1,20 +1,14 @@
 {% extends '_base.html' %}
 {% block left %}
 
-  <p>Recent maps:
-
-  <ul>
-    <li>map
-    <li>map
-    <li>map
-  </ul>
+  <img src="/static/sample.png">
 
 {% endblock %}
 {% block right %}
 
-  <h2>Hello world!</h2>
+  <h2>Map your data!</h2>
 
-  <p>We like maps.
+  <p>Upload a spreadsheet to make an interactive map.
 
   <p><a href="{{ url_for('create') }}" class="button button-fill">Make a map</a>
 
