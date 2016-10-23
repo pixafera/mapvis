@@ -348,7 +348,7 @@ h2 .link {
   font-weight: 500;
 }
 .label-active:before {
-  content: "•";
+  content: "\25CF";
   padding-right: 0.25em;
   font-size: 1.25em;
   line-height: 1rem;
