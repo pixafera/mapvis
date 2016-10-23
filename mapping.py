@@ -248,6 +248,7 @@ def inspect_column(heading, values):
 
     if kind in ('int', 'float'):
         if kind == 'int':
+            compare = []
             for i in range(len(values)):
                 try:
                     values[i] = int(str(values[i]).replace(",", ""))
