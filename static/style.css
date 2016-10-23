@@ -75,6 +75,7 @@ em {
   padding: 2em 2em;
   width: calc(50% - 4em);
   float: right;
+  overflow: hidden;
 }
 .right.col {
   padding-left: 0
@@ -271,6 +272,7 @@ rect {
   stroke: black;
   stroke-width: 0.3px;
   fill: #f0ffee;
+  vector-effect: non-scaling-stroke;
 }
 
 .country.country-active {
@@ -298,6 +300,10 @@ h2 .link {
   background: #d2ffcc;
   display: inline-block;
   line-height: 1.25em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .stat {
