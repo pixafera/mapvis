@@ -573,12 +573,16 @@ function showBreakdown(div, headings, values) {
       case 'float':
       case 'int':
         var wrap, bar;
-        li.appendChild(wrap = h('span', 'value value-' + kind, ""));
-        //if (isNaN(heading.max)) break;
-        var perc = ((+value.replace(/,/g, '')) / heading.max) * 100;
-        wrap.appendChild(bar = h('div', 'percent-bar bg-' + (i % 5), [h('span','percent-value', value)]));
-        bar.style.width = perc + '%';
-        canActivate = true;
+        if (heading.max) {
+          li.appendChild(wrap = h('span', 'value value-' + kind, ""));
+          //if (isNaN(heading.max)) break;
+          var perc = ((+value.replace(/,/g, '')) / heading.max) * 100;
+          wrap.appendChild(bar = h('div', 'percent-bar bg-' + (i % 5), [h('span','percent-value', value)]));
+          bar.style.width = perc + '%';
+          canActivate = true;
+        } else {
+          li.appendChild(h('span', 'value value-text', value));
+        }
         break;
       case 'enum': // TODO ???
         if (heading.options.length <= 5) {
@@ -648,7 +652,7 @@ function recolor(index) {
         break;
       case 'float':
       case 'int':
-        path.style.fill = percentColor(c, (+value) * 100, true);
+        path.style.fill = percentColor(c, (+((''+value).replace(/,/g, '')) / heading.max) * 100, true);
         break;
       case 'percent':
         path.style.fill = percentColor(c, value);
@@ -668,7 +672,9 @@ var colors = [
 function percentColor(index, percent, log) {
   var alpha = +((''+percent).replace('%', '').replace(/,/, '')) / 100;
   if (log) alpha = logify(alpha)
-  return colors[index % 5].replace("X", alpha);
+  var out = colors[index % 5].replace("X", alpha);
+  console.log(percent, out);
+  return out;
 }
 
 function logify(frac) {
