@@ -188,7 +188,7 @@ function loadFiles(files) {
 var progress = document.createElement('div');
 progress.className = 'progress';
 progress.style.opacity = 0;
-document.body.appendChild(progress);
+//document.body.appendChild(progress);
 
 function setProgress(frac, done) {
   if (!done) {
@@ -451,7 +451,6 @@ function visualizeParty(json) {
   right.innerHTML = '';
 
   // create shapes.
-  //var w = left.clientWidth;
   var svg = window.svg = newSVG(300, 300);
   //svg.appendChild(makeStyle());
   left.appendChild(svg);
@@ -466,7 +465,7 @@ function visualizeParty(json) {
   var activeRecord;
 
   function deactivate() {
-      activeRecord.path.classList.remove('country-active');
+    activeRecord.path.classList.remove('country-active');
   }
 
   records.forEach(function(record) {
@@ -492,6 +491,7 @@ function visualizeParty(json) {
       record.path = path;
 
       //world.appendChild(bbRect(region.boundingbox));
+      refresh();
     });
   });
 
@@ -500,12 +500,13 @@ function visualizeParty(json) {
   svg.appendChild(foo);
 
   function refresh() {
-    var sw = svg.clientWidth;
-    var sh = svg.clientHeight;
-    //console.log(sw, sh);
-
     var width = bbox[3] - bbox[2];
     var height = bbox[1] - bbox[0];
+
+    var sw = right.clientWidth - 2; // The right column just happens to be the size we want!
+    sh = (sw / width * height) * 1; // set height correct aspect
+    svg.style.width = sw + 'px';
+    svg.style.height = sh + 'px';
 
     if (width < 0) throw 'poo';
     if (height < 0) throw 'poo';
@@ -516,18 +517,19 @@ function visualizeParty(json) {
     var x = (bbox[2] + bbox[3]) / 2;
     var y = (bbox[0] + bbox[1]) / 2;
 
+    console.log(x, y, sw, sh, scale);
+
     var p = 'translate('+x+'px, '+y+'px) scale(' + scale + ')';
     world.style.transform = p;
 
-    //sh = (sw / width * height) * 2.25;
-    //svg.style.height = sh + 'px';
-    foo.style.transform = 'translate(' + (sw/2) + 'px, ' + (sh/2) + 'px)';
+    var q = 'translate(' + (sw/2) + 'px, ' + (sh/2) + 'px)';
+    foo.style.transform = q;
 
     if (activeRecord) showBreakdown(breakdown, headings, activeRecord.row);
 
     timeout = null;
   }
-  refresh();
+  //setTimeout(refresh, 100);
   var timeout;
   window.addEventListener('resize', function() {
     if (timeout) clearTimeout(timeout);
