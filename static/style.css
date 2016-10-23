@@ -271,6 +271,7 @@ rect {
   stroke: black;
   stroke-width: 0.3px;
   fill: #f0ffee;
+  vector-effect: non-scaling-stroke;
 }
 
 .country.country-active {
