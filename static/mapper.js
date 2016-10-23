@@ -543,6 +543,7 @@ function visualizeParty(json) {
 var activeHeading;
 
 function showBreakdown(div, headings, values) {
+  var scroll = document.body.scrollTop;
   div.innerHTML = "";
   var w = div.offsetWidth;
 
@@ -577,7 +578,12 @@ function showBreakdown(div, headings, values) {
         bar.style.width = perc + '%';
         break;
       case 'enum': // TODO ???
-        li.appendChild(h('span', 'value value-enum', value));
+        if (heading.options.length <= 5) {
+          var index = heading.options.indexOf(value);
+          li.appendChild(h('span', 'value value-enum bg-' + index, value));
+        } else {
+          li.appendChild(h('span', 'value value-text', value));
+        }
         break;
       case 'percent':
         // TODO graph this
@@ -604,6 +610,8 @@ function showBreakdown(div, headings, values) {
     }
 
   });
+
+  document.body.scrollTop = scroll;
 
 }
 

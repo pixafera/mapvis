@@ -269,8 +269,8 @@ rect {
 
 .country {
   cursor: pointer;
-  stroke: black;
-  stroke-width: 0.3px;
+  stroke: rgba(0,0,0,0.5);
+  stroke-width: 0.5px;
   fill: #f0ffee;
   vector-effect: non-scaling-stroke;
 }
@@ -279,6 +279,17 @@ rect {
   stroke-width: 1.2px;
   stroke: #429ed7;
 }
+
+.fill-0 { fill: #ffe556; }
+.fill-1 { fill: #ba74cc; }
+.fill-2 { fill: #f26a8c; }
+.fill-3 { fill: #44afc4; }
+.fill-4 { fill: #19d39b; }
+.bg-0 { background: rgba(255, 229, 86, 0.5); }
+.bg-1 { background: rgba(186, 116, 204, 0.5); }
+.bg-2 { background: rgba(242, 116, 140, 0.5); }
+.bg-3 { background: rgba(68, 175, 196, 0.5); }
+.bg-4 { background: rgba(25, 211, 155, 0.5); }
 
 /*****************************************************************************/
 
@@ -344,7 +355,7 @@ h2 .link {
 
 .value {
   font-weight: 500;
-  color: #222;
+  color: rgba(0,0,0,0.8);
   left: 16em;
   right: 0;
   margin: 0;
@@ -364,5 +375,10 @@ h2 .link {
   color: rgba(0,0,0,0.7);
   top: 0.125em;
   right: 0.125em;
+}
+
+.value-enum {
+  display: inline;
+  position: relative;
 }
 
