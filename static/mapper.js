@@ -677,7 +677,7 @@ function percentColor(index, percent, log) {
   return out;
 }
 
-function logify(frac) {
-  return frac;
+function logify(x) {
+  return 0.91 * Math.log(2*x + 1)
 }
 
