@@ -151,7 +151,7 @@ em {
 .button-fill  { background: #9AC0EF; box-shadow: 0 4px #7298C5; }
 .button-fill:active {                box-shadow: 0 2px #7298C5; }
 
-.button-white { border: 2px solid #D2D5E2; box-shadow: 0 4px #D2D5E2;}
+.button-white {border: 2px solid #D2D5E2;box-shadow: 0 4px #D2D5E2;background: hsl(196, 100%, 39%);}
 .button-white:active {                     box-shadow: 0 2px #D2D5E2; }
 
 .button-icon {

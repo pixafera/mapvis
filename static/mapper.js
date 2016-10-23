@@ -578,6 +578,7 @@ function showBreakdown(div, headings, values) {
         var perc = ((+value.replace(/,/g, '')) / heading.max) * 100;
         wrap.appendChild(bar = h('div', 'percent-bar', [h('span','percent-value', value)]));
         bar.style.width = perc + '%';
+        canActivate = true;
         break;
       case 'enum': // TODO ???
         if (heading.options.length <= 5) {
@@ -589,12 +590,12 @@ function showBreakdown(div, headings, values) {
         }
         break;
       case 'percent':
-        // TODO graph this
         var wrap, bar;
         li.appendChild(wrap = h('span', 'value value-percent'));
         var disp = value.replace(/\.[0-9]+/, '')
         wrap.appendChild(bar = h('div', 'percent-bar', [h('span','percent-value', disp)]));
         bar.style.width = value;
+        canActivate = true;
         break;
       default:
         throw "bad" + kind;
@@ -603,12 +604,9 @@ function showBreakdown(div, headings, values) {
 
     function activate() {
       if (activeHeading) deactivate();
-      if (!canActivate) {
-        recolor(-1);
-        return;
+      if (canActivate) {
+        label.className = 'label label-active';
       }
-      activeHeading = heading;
-      label.className = 'label label-active';
       recolor(i);
     }
     label.addEventListener('click', activate);
@@ -624,8 +622,7 @@ function showBreakdown(div, headings, values) {
 }
 
 function recolor(index) {
-  var heading = activeHeading;
-  //if (heading !== headings[index]) throw 'oops';
+  var heading = activeHeading = index === -1 ? null : headings[index];
   var kind = heading.kind;
 
   for (var i=0; i<records.length; i++) {
@@ -635,6 +632,7 @@ function recolor(index) {
     var value = record.row[index];
 
     var cls = record === activeRecord ? 'country country-active' : 'country'; 
+    path.style.fill = '';
     path.setAttribute('class', cls);
 
     if (index === -1) continue;
@@ -644,6 +642,12 @@ function recolor(index) {
         // console.log(cls + ' fill-' + 
         // path.className = cls + ' fill-' + heading.options.indexOf(value);
         // console.log(path.className);
+        break;
+      case 'float':
+      case 'int':
+        value = (+(''+value).replace(/,/g, '')) / heading.max * 100;
+      case 'percent':
+        path.style.fill = 'rgba(0, 145, 198, ' + (+(''+value).replace('%', '') / 100) + ')'; //'hsl(196, 100%, 39%)';
         break;
     }
   }
