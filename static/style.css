@@ -80,7 +80,21 @@ em {
 .right.col {
   padding-left: 0
 }
-.left.col {position: fixed;}
+.left.col {
+  position: fixed;
+}
+
+@media screen and (max-width: 64em) {
+  .col, .right.col {
+    float: none;
+    width: auto;
+    padding: 0 2em 1.5em;
+  }
+  .left.col {
+    position: static;
+    padding: 2em 0;
+  }
+}
 
 .centre {
   text-align: center;
