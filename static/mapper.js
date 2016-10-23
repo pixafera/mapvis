@@ -502,7 +502,7 @@ function visualizeParty(json) {
   function refresh() {
     var sw = svg.clientWidth;
     var sh = svg.clientHeight;
-    console.log(sw, sh);
+    //console.log(sw, sh);
 
     var width = bbox[3] - bbox[2];
     var height = bbox[1] - bbox[0];
@@ -510,6 +510,7 @@ function visualizeParty(json) {
     if (width < 0) throw 'poo';
     if (height < 0) throw 'poo';
     var scale = Math.min(sw / width, sh / height);
+    //console.log(sw / width, sh / height);
 
     // Where is the bounding box center?
     var x = (bbox[2] + bbox[3]) / 2;
@@ -523,9 +524,15 @@ function visualizeParty(json) {
     foo.style.transform = 'translate(' + (sw/2) + 'px, ' + (sh/2) + 'px)';
 
     if (activeRecord) showBreakdown(breakdown, headings, activeRecord.row);
+
+    timeout = null;
   }
   refresh();
-  window.addEventListener('resize', refresh);
+  var timeout;
+  window.addEventListener('resize', function() {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(refresh);
+  });
 
   // TODO pan, zoom
 

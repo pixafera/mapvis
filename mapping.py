@@ -74,7 +74,7 @@ def query_osm(queries):
 
 def simplify_paths(paths):
     paths = svg.path.parse_path(paths)
-    precision = 1
+    precision = 1 # TODO adaptive!
     new_path = svg.path.Path()
     for l in paths:
         x1 = round(l.start.real, precision)
